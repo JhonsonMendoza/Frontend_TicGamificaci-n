@@ -77,6 +77,12 @@ const MyAnalysesPage: React.FC = () => {
     return 'text-red-600';
   };
 
+  const formatScore = (score: any, digits: number = 1) => {
+    const n = typeof score === 'string' ? parseFloat(score) : score;
+    if (typeof n !== 'number' || !isFinite(n)) return 'N/A';
+    return n.toFixed(digits);
+  };
+
   const getSeverityColor = (severity: string) => {
     switch (severity.toLowerCase()) {
       case 'high':
@@ -156,7 +162,7 @@ const MyAnalysesPage: React.FC = () => {
             </div>
             <div className="bg-white rounded-lg shadow p-6 text-center">
               <div className={`text-3xl font-bold ${getScoreColor(summary.averageScore)}`}>
-                {summary.averageScore.toFixed(1)}
+                {formatScore(summary.averageScore)}
               </div>
               <div className="text-gray-600">Puntuación Promedio</div>
             </div>
@@ -254,7 +260,7 @@ const MyAnalysesPage: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className={`text-lg font-bold ${getScoreColor(analysis.qualityScore)}`}>
-                          {analysis.qualityScore.toFixed(1)}
+                          {formatScore(analysis.qualityScore)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

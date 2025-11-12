@@ -1,9 +1,10 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 // Configuración base para todas las APIs
+// Leer configuración desde variables de entorno (Next.js expone las que empiezan con NEXT_PUBLIC_)
 export const API_CONFIG = {
-  BASE_URL: 'http://localhost:3001/api',
-  TIMEOUT: 60000, // 60 segundos para operaciones normales
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api',
+  TIMEOUT: Number(process.env.NEXT_PUBLIC_API_TIMEOUT || 60000), // 60 segundos por defecto
   ENDPOINTS: {
     ANALYSIS: {
       HEALTH: '/analysis/health',

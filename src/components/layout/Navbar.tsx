@@ -79,6 +79,15 @@ const Navbar: React.FC<NavbarProps> = ({ children }) => {
                   </span>
                 </Link>
                 <Link 
+                  href="/missions" 
+                  className={getLinkClasses('/missions')}
+                >
+                  <span className="flex items-center space-x-2">
+                    <span>🎯</span>
+                    <span>Mis Misiones</span>
+                  </span>
+                </Link>
+                <Link 
                   href="/rankings" 
                   className={getLinkClasses('/rankings')}
                 >

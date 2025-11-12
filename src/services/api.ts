@@ -10,6 +10,7 @@ import {
   RankingUser,
   GlobalStats
 } from '../types/auth';
+import { Mission } from '../types/auth';
 
 class ApiService {
   private api: AxiosInstance;
@@ -128,6 +129,42 @@ class ApiService {
 
   async getAnalysisById(id: number): Promise<ApiResponse<Analysis>> {
     const response = await this.api.get(`/analysis/${id}`);
+    return response.data;
+  }
+
+  // Missions
+  async getMyMissions(): Promise<ApiResponse<Mission[]>> {
+    const response = await this.api.get('/missions/my');
+    return response.data;
+  }
+
+  async getMissionsByAnalysis(analysisId: number): Promise<ApiResponse<Mission[]>> {
+    const response = await this.api.get(`/missions/analysis/${analysisId}`);
+    return response.data;
+  }
+
+  async markMissionFixed(id: number): Promise<ApiResponse<Mission>> {
+    const response = await this.api.post(`/missions/${id}/mark-fixed`);
+    return response.data;
+  }
+
+  async reanalyzeMission(id: number, file: File): Promise<ApiResponse<any>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await this.api.post(`/missions/${id}/reanalyze`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 5 * 60 * 1000,
+    });
+    return response.data;
+  }
+
+  async reanalyzeAnalysis(analysisId: number, file: File): Promise<ApiResponse<any>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await this.api.post(`/analysis/${analysisId}/reanalyze`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 5 * 60 * 1000,
+    });
     return response.data;
   }
 

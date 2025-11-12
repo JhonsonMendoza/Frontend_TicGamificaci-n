@@ -124,6 +124,12 @@ const RankingsPage: React.FC = () => {
     return 'text-red-600';
   };
 
+  const formatScore = (score: any, digits: number = 1) => {
+    const n = typeof score === 'string' ? parseFloat(score) : score;
+    if (typeof n !== 'number' || !isFinite(n)) return 'N/A';
+    return n.toFixed(digits);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -184,7 +190,7 @@ const RankingsPage: React.FC = () => {
               <div className="text-gray-600">Vulnerabilidades Encontradas</div>
             </div>
             <div className="bg-white rounded-lg shadow p-6 text-center">
-              <div className="text-3xl font-bold text-purple-600">{globalStats.averageQualityScore.toFixed(1)}</div>
+              <div className="text-3xl font-bold text-purple-600">{formatScore(globalStats.averageQualityScore)}</div>
               <div className="text-gray-600">Puntuación Promedio</div>
             </div>
           </div>
@@ -208,7 +214,7 @@ const RankingsPage: React.FC = () => {
               </div>
               <div className="text-right">
                 <div className={`text-2xl font-bold ${getScoreColor(myPosition.userRank?.averageScore || 0)}`}>
-                  {myPosition.userRank?.averageScore.toFixed(1)}
+                  {formatScore(myPosition.userRank?.averageScore)}
                 </div>
                 <div className="text-sm text-gray-600">
                   {myPosition.userRank?.totalAnalyses} análisis
@@ -356,7 +362,7 @@ const RankingsPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className={`text-lg font-bold ${getScoreColor(user.averageScore)}`}>
-                        {user.averageScore.toFixed(1)}
+                        {formatScore(user.averageScore)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

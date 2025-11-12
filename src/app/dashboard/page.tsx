@@ -122,6 +122,12 @@ export default function Dashboard() {
     return statusMap[status as keyof typeof statusMap] || { text: 'Desconocido', color: 'bg-gray-100 text-gray-800' };
   };
 
+  const formatScore = (score: any, digits: number = 1) => {
+    const n = typeof score === 'string' ? parseFloat(score) : score;
+    if (typeof n !== 'number' || !isFinite(n)) return '0';
+    return n.toFixed(digits);
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
@@ -159,7 +165,7 @@ export default function Dashboard() {
     },
     {
       title: "Puntuación Promedio",
-      value: `${stats?.averageScore?.toFixed(1) || '0'}/10`,
+      value: `${formatScore(stats?.averageScore, 1)}/10`,
       icon: "🎯",
       color: "bg-green-500",
     },

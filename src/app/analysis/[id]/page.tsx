@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Navbar from '../../../components/layout/Navbar';
-import { Analysis } from '../../../types/auth';
+import { Analysis, Mission } from '../../../types/auth';
 import apiService from '../../../services/api';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
@@ -12,8 +12,9 @@ const AnalysisDetailPage: React.FC = () => {
   const params = useParams();
   const router = useRouter();
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [missions, setMissions] = useState<Mission[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'findings' | 'files'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'findings' | 'files' | 'missions'>('overview');
 
   const analysisId = params.id as string;
 
@@ -28,6 +29,18 @@ const AnalysisDetailPage: React.FC = () => {
       const response = await apiService.getAnalysisById(parseInt(analysisId));
       if (response.success && response.data) {
         setAnalysis(response.data);
+        // Si el usuario está autenticado, intentar cargar las misiones de este análisis
+        try {
+          if (apiService.isAuthenticated()) {
+            const mresp = await apiService.getMissionsByAnalysis(Number(analysisId));
+            if (mresp.success && mresp.data) setMissions(mresp.data);
+          }
+        } catch (err: unknown) {
+          // No bloquear si falla la carga de misiones
+          const msg =
+            err instanceof Error ? err.message : typeof err === 'string' ? err : JSON.stringify(err);
+          console.warn('No se pudieron cargar las misiones del análisis:', msg);
+        }
       } else {
         toast.error('Análisis no encontrado');
         router.push('/my-analyses');
@@ -38,6 +51,42 @@ const AnalysisDetailPage: React.FC = () => {
       router.push('/my-analyses');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleMissionFileChange = async (e: React.ChangeEvent<HTMLInputElement>, missionId: number) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      toast.loading('Enviando re-análisis...');
+      const res = await apiService.reanalyzeMission(missionId, file);
+      if (res.success) {
+        toast.dismiss();
+        toast.success('Re-análisis enviado');
+        // refrescar misiones
+        const mresp = await apiService.getMissionsByAnalysis(Number(analysisId));
+        if (mresp.success && mresp.data) setMissions(mresp.data);
+      } else {
+        toast.dismiss();
+        toast.error(res.message || 'Error en re-análisis');
+      }
+    } catch (err: any) {
+      toast.dismiss();
+      toast.error(err.response?.data?.message || err.message || 'Error en re-análisis');
+    }
+  };
+
+  const handleMarkMissionFixed = async (id: number) => {
+    try {
+      const res = await apiService.markMissionFixed(id);
+      if (res.success) {
+        toast.success('Misión marcada como corregida');
+        const mresp = await apiService.getMissionsByAnalysis(Number(analysisId));
+        if (mresp.success && mresp.data) setMissions(mresp.data);
+      }
+    } catch (err) {
+      toast.error('Error marcando misión como corregida');
     }
   };
 
@@ -64,6 +113,12 @@ const AnalysisDetailPage: React.FC = () => {
     return 'text-red-600';
   };
 
+  const formatScore = (score: any, digits: number = 1) => {
+    const n = typeof score === 'string' ? parseFloat(score) : score;
+    if (typeof n !== 'number' || !isFinite(n)) return 'N/A';
+    return n.toFixed(digits);
+  };
+
   const getSeverityColor = (severity: string) => {
     switch (severity.toLowerCase()) {
       case 'high':
@@ -87,6 +142,35 @@ const AnalysisDetailPage: React.FC = () => {
         return '🔵';
       default:
         return '⚪';
+    }
+  };
+
+  const [uploadingAnalysis, setUploadingAnalysis] = useState(false);
+
+  const handleAnalysisFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingAnalysis(true);
+      const resp = await apiService.reanalyzeAnalysis(Number(analysisId), file);
+      if (resp.success) {
+        toast.success('Re-análisis enviado. Se generó un nuevo análisis.');
+        // Opcional: redirigir al nuevo análisis si el backend devuelve id
+        if (resp.data?.id) {
+          router.push(`/analysis/${resp.data.id}`);
+          return;
+        }
+        // Si no, recargar el actual
+        await loadAnalysis();
+      } else {
+        toast.error(resp.message || 'Error al enviar re-análisis');
+      }
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || 'Error en re-análisis';
+      toast.error(msg);
+    } finally {
+      setUploadingAnalysis(false);
     }
   };
 
@@ -166,19 +250,25 @@ const AnalysisDetailPage: React.FC = () => {
                 Análisis realizado el {formatDate(analysis.createdAt)}
               </p>
             </div>
-            <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(analysis.status)}`}>
-              {analysis.status === 'completed' ? 'Completado' : 
-               analysis.status === 'processing' ? 'Procesando' : 
-               analysis.status === 'failed' ? 'Fallido' : 'Pendiente'}
-            </span>
+            <div className="flex items-center space-x-3">
+              <label className="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded cursor-pointer">
+                {uploadingAnalysis ? 'Subiendo...' : 'Subir Corrección / Re-análisis'}
+                <input type="file" className="hidden" onChange={handleAnalysisFileChange} />
+              </label>
+              <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(analysis.status)}`}>
+                {analysis.status === 'completed' ? 'Completado' : 
+                 analysis.status === 'processing' ? 'Procesando' : 
+                 analysis.status === 'failed' ? 'Fallido' : 'Pendiente'}
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow p-6 text-center">
-            <div className={`text-3xl font-bold ${getScoreColor(analysis.qualityScore)}`}>
-              {analysis.qualityScore.toFixed(1)}
+            <div className={`text-3xl font-bold ${getScoreColor(Number(analysis.qualityScore) || 0)}`}>
+              {formatScore(analysis.qualityScore)}
             </div>
             <div className="text-gray-600">Puntuación de Calidad</div>
           </div>
@@ -219,6 +309,16 @@ const AnalysisDetailPage: React.FC = () => {
                 }`}
               >
                 Problemas Encontrados ({analysis.totalIssues})
+              </button>
+              <button
+                onClick={() => setActiveTab('missions')}
+                className={`py-4 px-6 border-b-2 font-medium text-sm ${
+                  activeTab === 'missions' 
+                    ? 'border-blue-500 text-blue-600' 
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Misiones {missions.length > 0 ? `(${missions.length})` : ''}
               </button>
               <button
                 onClick={() => setActiveTab('files')}
@@ -365,6 +465,23 @@ const AnalysisDetailPage: React.FC = () => {
                                             {finding.line && ` (línea ${finding.line})`}
                                           </div>
                                         )}
+                                        {finding._missionId && (
+                                          <div className="mt-2">
+                                            <button
+                                              onClick={() => {
+                                                setActiveTab('missions');
+                                                // esperar a que el tab se renderice
+                                                setTimeout(() => {
+                                                  const el = document.getElementById(`mission-${finding._missionId}`);
+                                                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                                }, 200);
+                                              }}
+                                              className="text-sm text-blue-600 underline"
+                                            >
+                                              Ver misión relacionada (#{finding._missionId})
+                                            </button>
+                                          </div>
+                                        )}
                                       </div>
                                     </div>
                                   </div>
@@ -377,6 +494,40 @@ const AnalysisDetailPage: React.FC = () => {
                         ))}
                       </div>
                     )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'missions' && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold mb-4">Tareas / Misiones para este proyecto</h3>
+
+                {missions.length === 0 ? (
+                  <div className="bg-white rounded-lg shadow p-6 text-center">No hay misiones generadas para este análisis</div>
+                ) : (
+                  <div className="space-y-4">
+                    {missions.map(m => (
+                      <div id={`mission-${m.id}`} key={m.id} className="bg-white rounded-lg shadow p-4 flex items-start justify-between">
+                        <div className="flex-1 pr-4">
+                          <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-500">{m.severity?.toUpperCase()}</div>
+                            <div className={`text-xs font-semibold px-2 py-1 rounded ${m.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : m.status === 'fixed' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>{m.status}</div>
+                          </div>
+                          <div className="text-lg font-semibold mt-2">{m.title}</div>
+                          {m.description && <div className="text-sm text-gray-600 mt-1">{m.description}</div>}
+                          <div className="text-xs text-gray-400 mt-2">Archivo: {m.filePath || 'N/A'} {m.lineStart ? `: L${m.lineStart}` : ''}</div>
+                        </div>
+
+                        <div className="flex flex-col items-end space-y-2">
+                          <label className="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded cursor-pointer">
+                            Subir Corrección
+                            <input type="file" className="hidden" onChange={(e) => handleMissionFileChange(e as any, m.id)} />
+                          </label>
+                          <button onClick={() => handleMarkMissionFixed(m.id)} className="text-sm text-blue-600 underline">Marcar como corregida</button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -417,8 +568,8 @@ const AnalysisDetailPage: React.FC = () => {
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span className="text-gray-600">Puntuación:</span>
-                          <span className={`font-bold ${getScoreColor(analysis.qualityScore)}`}>
-                            {analysis.qualityScore.toFixed(1)}/100
+                          <span className={`font-bold ${getScoreColor(Number(analysis.qualityScore) || 0)}`}>
+                            {formatScore(analysis.qualityScore)}/100
                           </span>
                         </div>
                         <div className="flex justify-between">

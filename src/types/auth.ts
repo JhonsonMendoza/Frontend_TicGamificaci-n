@@ -87,3 +87,20 @@ export interface GlobalStats {
     qualityScore: number;
   };
 }
+
+// Missions
+export interface Mission {
+  id: number;
+  analysisRunId: number;
+  title: string;
+  description?: string;
+  filePath?: string;
+  lineStart?: number | null;
+  lineEnd?: number | null;
+  severity: 'low' | 'medium' | 'high';
+  status: 'pending' | 'fixed' | 'skipped';
+  metadata?: any;
+  createdAt: string;
+  updatedAt: string;
+  fixedAt?: string | null;
+}
