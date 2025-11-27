@@ -340,13 +340,13 @@ const RankingsPage: React.FC = () => {
                         <div className="flex-shrink-0 h-10 w-10">
                           <div className="h-10 w-10 bg-blue-600 rounded-full flex items-center justify-center">
                             <span className="text-white font-medium text-sm">
-                              {user.name.charAt(0).toUpperCase()}
+                              {(user.name || user.email || 'U').charAt(0).toUpperCase()}
                             </span>
                           </div>
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {user.name}
+                            {user.name || user.email || 'Usuario'}
                           </div>
                         </div>
                       </div>

@@ -37,6 +37,9 @@ const AuthButton: React.FC = () => {
   }
 
   if (isAuthenticated && user) {
+    const displayName = user.name || user.email || 'Usuario';
+    const initial = displayName.charAt(0).toUpperCase();
+    
     return (
       <div className="relative" ref={dropdownRef}>
         <button
@@ -45,10 +48,10 @@ const AuthButton: React.FC = () => {
         >
           <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
             <span className="text-white font-medium text-sm">
-              {user.name.charAt(0).toUpperCase()}
+              {initial}
             </span>
           </div>
-          <span className="hidden sm:block font-medium">{user.name}</span>
+          <span className="hidden sm:block font-medium">{displayName}</span>
           <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>

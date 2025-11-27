@@ -66,7 +66,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       if (response.user) {
         setUser(response.user);
-        toast.success(`¡Bienvenido, ${response.user.name}!`);
+        const userName = response.user.name || response.user.email || 'Usuario';
+        toast.success(`¡Bienvenido, ${userName}!`);
         return true;
       }
       
@@ -93,7 +94,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       if (response.user) {
         setUser(response.user);
-        toast.success(`¡Cuenta creada exitosamente! Bienvenido, ${response.user.name}!`);
+        const userName = response.user.name || response.user.email || 'Usuario';
+        toast.success(`¡Cuenta creada exitosamente! Bienvenido, ${userName}!`);
         return true;
       }
       
