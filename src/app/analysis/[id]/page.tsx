@@ -54,29 +54,6 @@ const AnalysisDetailPage: React.FC = () => {
     }
   };
 
-  const handleMissionFileChange = async (e: React.ChangeEvent<HTMLInputElement>, missionId: number) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      toast.loading('Enviando re-análisis...');
-      const res = await apiService.reanalyzeMission(missionId, file);
-      if (res.success) {
-        toast.dismiss();
-        toast.success('Re-análisis enviado');
-        // refrescar misiones
-        const mresp = await apiService.getMissionsByAnalysis(Number(analysisId));
-        if (mresp.success && mresp.data) setMissions(mresp.data);
-      } else {
-        toast.dismiss();
-        toast.error(res.message || 'Error en re-análisis');
-      }
-    } catch (err: any) {
-      toast.dismiss();
-      toast.error(err.response?.data?.message || err.message || 'Error en re-análisis');
-    }
-  };
-
   const handleMarkMissionFixed = async (id: number) => {
     try {
       const res = await apiService.markMissionFixed(id);
@@ -524,11 +501,7 @@ const AnalysisDetailPage: React.FC = () => {
                           </div>
 
                           <div className="flex flex-col items-end space-y-2">
-                            <label className="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded cursor-pointer">
-                              Subir Corrección
-                              <input type="file" className="hidden" onChange={(e) => handleMissionFileChange(e as any, m.id)} />
-                            </label>
-                            <button onClick={() => handleMarkMissionFixed(m.id)} className="text-sm text-blue-600 underline">Marcar como corregida</button>
+                            <button onClick={() => handleMarkMissionFixed(m.id)} className="px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">Marcar como corregida</button>
                           </div>
                         </div>
                       );

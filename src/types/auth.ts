@@ -104,3 +104,53 @@ export interface Mission {
   updatedAt: string;
   fixedAt?: string | null;
 }
+
+// Custom Missions
+export interface CustomMission {
+  id: number;
+  title: string;
+  description: string;
+  subject: string; // 'calculus', 'physics', 'differential', 'digital', 'oop'
+  difficulty: string; // 'easy', 'medium', 'hard'
+  pointsMin: number | null;
+  pointsMax: number | null;
+  basePoints: number;
+  pointsPerTest: number;
+  requiredClasses: string[];
+  requiredMethods: string[] | null;
+  tests: MissionTest[] | null;
+  criteria: string | null;
+  isActive: boolean;
+  order: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MissionTest {
+  name: string;
+  className: string;
+  methodName: string;
+  params: any[];
+  expectedResult: any;
+  tolerance?: number;
+  setup?: string;
+}
+
+export interface MissionSubmission {
+  id: number;
+  userId: number;
+  customMissionId: number;
+  extractedPath: string | null;
+  status: string; // 'pending', 'approved', 'rejected', 'reviewing', 'error'
+  pointsAwarded: number | null;
+  testsPassed: number | null;
+  testsFailed: number | null;
+  testResults: any | null;
+  feedback: string | null;
+  errorMessage: string | null;
+  submittedAt: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  customMission?: CustomMission;
+}

@@ -88,6 +88,15 @@ const Navbar: React.FC<NavbarProps> = ({ children }) => {
                   </span>
                 </Link>
                 <Link 
+                  href="/custom-missions" 
+                  className={getLinkClasses('/custom-missions')}
+                >
+                  <span className="flex items-center space-x-2">
+                    <span>🚀</span>
+                    <span>Desafíos</span>
+                  </span>
+                </Link>
+                <Link 
                   href="/rankings" 
                   className={getLinkClasses('/rankings')}
                 >
@@ -106,6 +115,15 @@ const Navbar: React.FC<NavbarProps> = ({ children }) => {
                   <span className="flex items-center space-x-2">
                     <span>🏠</span>
                     <span>Inicio</span>
+                  </span>
+                </Link>
+                <Link 
+                  href="/custom-missions" 
+                  className={getLinkClasses('/custom-missions')}
+                >
+                  <span className="flex items-center space-x-2">
+                    <span>🚀</span>
+                    <span>Desafíos</span>
                   </span>
                 </Link>
                 <Link 

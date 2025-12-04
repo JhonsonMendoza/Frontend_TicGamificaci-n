@@ -8,7 +8,9 @@ import {
   ApiResponse,
   Analysis,
   RankingUser,
-  GlobalStats
+  GlobalStats,
+  CustomMission,
+  MissionSubmission,
 } from '../types/auth';
 import { Mission } from '../types/auth';
 
@@ -148,16 +150,6 @@ class ApiService {
     return response.data;
   }
 
-  async reanalyzeMission(id: number, file: File): Promise<ApiResponse<any>> {
-    const formData = new FormData();
-    formData.append('file', file);
-    const response = await this.api.post(`/missions/${id}/reanalyze`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 5 * 60 * 1000,
-    });
-    return response.data;
-  }
-
   async reanalyzeAnalysis(analysisId: number, file: File): Promise<ApiResponse<any>> {
     const formData = new FormData();
     formData.append('file', file);
@@ -226,6 +218,47 @@ class ApiService {
 
   isAuthenticated(): boolean {
     return !!this.getToken();
+  }
+
+  // Custom Missions
+  async getCustomMissions(filters?: { subject?: string; difficulty?: string }): Promise<ApiResponse<CustomMission[]>> {
+    const params = new URLSearchParams();
+    if (filters?.subject) params.append('subject', filters.subject);
+    if (filters?.difficulty) params.append('difficulty', filters.difficulty);
+    
+    const response = await this.api.get(`/custom-missions?${params.toString()}`);
+    return response.data;
+  }
+
+  async getCustomMissionById(id: number): Promise<ApiResponse<CustomMission>> {
+    const response = await this.api.get(`/custom-missions/${id}`);
+    return response.data;
+  }
+
+  async submitCustomMission(id: number, file: File): Promise<ApiResponse<MissionSubmission>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await this.api.post(`/custom-missions/${id}/submit`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 5 * 60 * 1000, // 5 minutos
+    });
+    return response.data;
+  }
+
+  async getMyCustomMissionSubmissions(): Promise<ApiResponse<MissionSubmission[]>> {
+    const response = await this.api.get('/custom-missions/my/submissions');
+    return response.data;
+  }
+
+  async getCustomMissionSubmission(missionId: number): Promise<ApiResponse<MissionSubmission | null>> {
+    const response = await this.api.get(`/custom-missions/${missionId}/submissions`);
+    return response.data;
+  }
+
+  async getMyCustomMissionStats(): Promise<ApiResponse<any>> {
+    const response = await this.api.get('/custom-missions/my/stats');
+    return response.data;
   }
 }
 
