@@ -25,6 +25,7 @@ class ApiService {
       headers: {
         'Content-Type': 'application/json',
       },
+      withCredentials: true, // Permite enviar cookies en las peticiones
     });
 
     // Interceptor para agregar token automáticamente
@@ -204,16 +205,36 @@ class ApiService {
     Cookies.set('auth_token', token, { 
       expires: 7, // 7 days
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict'
+      sameSite: 'lax'  // Cambiar a 'lax' para permitir redirecciones de Google
     });
+    // También guardar en localStorage como backup
+    try {
+      localStorage.setItem('token', token);
+    } catch (e) {
+      console.warn('localStorage no disponible');
+    }
   }
 
   getToken(): string | null {
-    return Cookies.get('auth_token') || null;
+    // Intentar primero desde cookies
+    const cookieToken = Cookies.get('auth_token');
+    if (cookieToken) return cookieToken;
+    
+    // Si no, intentar desde localStorage
+    try {
+      return localStorage.getItem('token') || null;
+    } catch (e) {
+      return null;
+    }
   }
 
   logout(): void {
     Cookies.remove('auth_token');
+    try {
+      localStorage.removeItem('token');
+    } catch (e) {
+      // localStorage no disponible
+    }
   }
 
   isAuthenticated(): boolean {

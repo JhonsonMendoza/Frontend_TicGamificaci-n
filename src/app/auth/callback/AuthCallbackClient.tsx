@@ -2,57 +2,69 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '../../../contexts/AuthContext';
 import apiService from '../../../services/api';
 import toast from 'react-hot-toast';
 
 const AuthCallbackClient: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { refreshUser } = useAuth();
   const [processing, setProcessing] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processed, setProcessed] = useState(false);
 
   useEffect(() => {
-    if (processed) return; // Evitar múltiples ejecuciones
+    if (processed) return;
     const handleCallback = async () => {
       try {
         const token = searchParams.get('token');
-        const error = searchParams.get('error');
+        const errorParam = searchParams.get('error');
 
-        if (error) {
+        if (errorParam) {
           setError('Error en la autenticación con Google');
           toast.error('Error en la autenticación con Google');
-          setTimeout(() => router.push('/'), 3000);
+          setTimeout(() => router.push('/auth/login'), 3000);
           return;
         }
 
         if (!token) {
           setError('No se recibió el token de autenticación');
           toast.error('No se recibió el token de autenticación');
-          setTimeout(() => router.push('/'), 3000);
+          setTimeout(() => router.push('/auth/login'), 3000);
           return;
         }
 
-        // Guardar el token
+        console.log('[Callback] Token recibido:', token.substring(0, 20) + '...');
+
+        // Guardar el token en localStorage y cookies
         apiService.setToken(token);
+        console.log('[Callback] Token guardado');
 
-        // Actualizar el contexto de usuario
-        await refreshUser();
+        // Verificar que el token se guardó correctamente
+        const savedToken = apiService.getToken();
+        console.log('[Callback] Token verificado:', savedToken?.substring(0, 20) + '...');
 
-        toast.success('¡Inicio de sesión exitoso!');
-        
-        // Redireccionar al inicio después de un momento
-        setTimeout(() => {
-          router.push('/');
-        }, 1000);
+        // Hacer una llamada a /auth/me para verificar que el token funciona
+        try {
+          const userData = await apiService.getCurrentUser();
+          console.log('[Callback] User data received:', userData.email);
+          
+          toast.success('¡Inicio de sesión exitoso!');
+          
+          // Redireccionar después de guardar todo
+          setTimeout(() => {
+            router.push('/');
+          }, 500);
+        } catch (authError: any) {
+          console.error('[Callback] Error fetching user data:', authError);
+          toast.error('Error al verificar tu usuario');
+          setTimeout(() => router.push('/auth/login'), 3000);
+        }
 
       } catch (err) {
         console.error('Error processing auth callback:', err);
         setError('Error procesando la autenticación');
         toast.error('Error procesando la autenticación');
-        setTimeout(() => router.push('/'), 3000);
+        setTimeout(() => router.push('/auth/login'), 3000);
       } finally {
         setProcessing(false);
         setProcessed(true);
@@ -60,7 +72,7 @@ const AuthCallbackClient: React.FC = () => {
     };
 
     handleCallback();
-  }, [searchParams, router, processed, refreshUser]); // Incluir processed para control
+  }, [searchParams, router, processed]);
 
   if (processing) {
     return (

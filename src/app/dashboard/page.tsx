@@ -7,6 +7,8 @@ import { Analysis, RankingUser, GlobalStats } from '../../types/auth';
 import apiService from '../../services/api';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
+import { achievementsApi } from '@/apis/achievements.api';
+import type { Achievement, AchievementStats } from '@/apis/achievements.api';
 
 interface MetricCard {
   title: string;
@@ -41,6 +43,8 @@ export default function Dashboard() {
   const [stats, setStats] = useState<AnalysisStats | null>(null);
   const [userRanking, setUserRanking] = useState<UserRankingInfo | null>(null);
   const [recentActivity, setRecentActivity] = useState<Analysis[]>([]);
+  const [recentAchievements, setRecentAchievements] = useState<Achievement[]>([]);
+  const [achievementStats, setAchievementStats] = useState<AchievementStats | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -90,6 +94,25 @@ export default function Dashboard() {
         }
       } catch (error) {
         console.log('No se pudo obtener el ranking del usuario');
+      }
+
+      // Obtener logros del usuario
+      try {
+        const achievementsResponse = await achievementsApi.getAchievementStats();
+        setAchievementStats(achievementsResponse);
+        if (achievementsResponse.achievements) {
+          const unlockedAchievements = achievementsResponse.achievements
+            .filter(a => a.isUnlocked)
+            .sort((a, b) => {
+              const dateA = new Date(a.unlockedAt || 0).getTime();
+              const dateB = new Date(b.unlockedAt || 0).getTime();
+              return dateB - dateA;
+            })
+            .slice(0, 3);
+          setRecentAchievements(unlockedAchievements);
+        }
+      } catch (error) {
+        console.log('No se pudo obtener los logros del usuario');
       }
 
     } catch (error) {
@@ -170,10 +193,10 @@ export default function Dashboard() {
       color: "bg-green-500",
     },
     {
-      title: "Ranking Global",
-      value: userRanking ? `#${userRanking.position}` : "N/A",
-      icon: "🏆",
-      color: "bg-orange-500"
+      title: "Puntos Totales",
+      value: achievementStats?.totalPoints || 0,
+      icon: "⭐",
+      color: "bg-yellow-500"
     }
   ];
 
@@ -317,6 +340,81 @@ export default function Dashboard() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Recent Achievements */}
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900">Logros Recientes</h3>
+                <Link 
+                  href="/achievements"
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                >
+                  Ver todos →
+                </Link>
+              </div>
+              {recentAchievements.length > 0 ? (
+                <div className="space-y-3">
+                  {recentAchievements.map((achievement) => (
+                    <div
+                      key={achievement.id}
+                      className="border border-blue-100 bg-blue-50 rounded-lg p-3"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-2xl">{achievement.icon}</span>
+                            <div>
+                              <p className="font-semibold text-gray-900 text-sm">
+                                {achievement.name}
+                              </p>
+                              <p className="text-xs text-gray-600">
+                                +{achievement.pointsReward} pts
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 text-sm">Sin logros desbloqueados aún</p>
+                  <p className="text-gray-400 text-xs mt-2">Completa misiones para desbloquear logros</p>
+                </div>
+              )}
+            </div>
+
+            {/* Achievement Stats */}
+            {achievementStats && (
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Progreso de Logros</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-gray-700 font-medium">
+                      {achievementStats.unlockedCount}/{achievementStats.totalAchievements}
+                    </span>
+                    <span className="text-blue-600 font-bold">
+                      {achievementStats.completionPercentage}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${achievementStats.completionPercentage}%` }}
+                    ></div>
+                  </div>
+                  <div className="pt-2 border-t">
+                    <div className="text-center">
+                      <p className="text-sm text-gray-600">Puntos Totales</p>
+                      <p className="text-2xl font-bold text-purple-600">
+                        {achievementStats.totalPoints}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Quick Actions */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Acciones Rápidas</h3>

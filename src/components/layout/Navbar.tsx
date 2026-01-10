@@ -105,6 +105,15 @@ const Navbar: React.FC<NavbarProps> = ({ children }) => {
                     <span>Rankings</span>
                   </span>
                 </Link>
+                <Link 
+                  href="/achievements" 
+                  className={getLinkClasses('/achievements')}
+                >
+                  <span className="flex items-center space-x-2">
+                    <span>🎖️</span>
+                    <span>Logros</span>
+                  </span>
+                </Link>
               </>
             ) : (
               <>

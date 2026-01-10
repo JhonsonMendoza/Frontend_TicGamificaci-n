@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { achievementsApi } from '@/apis/achievements.api';
 
 interface UserProfileDropdownProps {
   onClose: () => void;
@@ -9,6 +10,26 @@ interface UserProfileDropdownProps {
 
 const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onClose }) => {
   const { user, logout } = useAuth();
+  const [totalPoints, setTotalPoints] = useState<number>(0);
+  const [loadingPoints, setLoadingPoints] = useState(false);
+
+  useEffect(() => {
+    const fetchPoints = async () => {
+      try {
+        setLoadingPoints(true);
+        const stats = await achievementsApi.getAchievementStats();
+        setTotalPoints(stats.totalPoints || 0);
+      } catch (error) {
+        console.log('No se pudo obtener los puntos');
+      } finally {
+        setLoadingPoints(false);
+      }
+    };
+
+    if (user) {
+      fetchPoints();
+    }
+  }, [user]);
 
   const handleLogout = () => {
     logout();
@@ -49,6 +70,19 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onClose }) =>
             {user.career && <p>{user.career}</p>}
           </div>
         )}
+
+        {/* Points Badge */}
+        <div className="mt-3 flex items-center justify-between bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg p-2">
+          <div className="flex items-center space-x-2">
+            <span className="text-lg">⭐</span>
+            <div>
+              <p className="text-xs text-gray-600">Puntos Totales</p>
+              <p className="text-sm font-bold text-gray-900">
+                {loadingPoints ? '...' : totalPoints}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Menu Items */}
@@ -76,6 +110,17 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ onClose }) =>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             Mis Análisis
+          </div>
+        </a>
+
+        <a
+          href="/achievements"
+          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+          onClick={onClose}
+        >
+          <div className="flex items-center">
+            <span className="w-4 h-4 mr-3 text-lg flex items-center">🎖️</span>
+            Mis Logros
           </div>
         </a>
         
