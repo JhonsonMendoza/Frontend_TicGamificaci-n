@@ -6,14 +6,13 @@ export const APP_CONSTANTS = {
   FILE_SIZE_LIMIT: 50 * 1024 * 1024, // 50MB
   MAX_FILES: 1,
   
-  // Tipos de archivo permitidos
-  ALLOWED_FILE_TYPES: ['.zip', '.rar', '.tar', '.gz'],
+  // Tipos de archivo permitidos (sin .rar)
+  ALLOWED_FILE_TYPES: ['.zip', '.tar', '.gz'],
   ALLOWED_MIME_TYPES: [
     'application/zip',
     'application/x-zip-compressed',
     'application/zip-compressed',
     'application/octet-stream',
-    'application/x-rar-compressed',
     'application/x-tar',
     'application/gzip'
   ],
@@ -73,25 +72,24 @@ export class FileUtils {
   /**
    * Valida si un archivo es permitido
    */
-  static isFileAllowed(file: File): boolean {
+  static isFileAllowed(file: File): { allowed: boolean; reason?: string } {
     const extension = this.getFileExtension(file.name);
     const mimeType = file.type;
     
-    console.log(`[FILE VALIDATION] Archivo: ${file.name}`);
-    console.log(`[FILE VALIDATION] Extensión: ${extension}`);
-    console.log(`[FILE VALIDATION] MIME Type: ${mimeType}`);
-    console.log(`[FILE VALIDATION] Tamaño: ${file.size} bytes`);
+    // Validación especial para .rar
+    if (extension === '.rar') {
+      return {
+        allowed: false,
+        reason: 'Los archivos .rar no están soportados. Por favor utiliza archivos .zip'
+      };
+    }
     
     const extensionAllowed = APP_CONSTANTS.ALLOWED_FILE_TYPES.includes(extension);
     const mimeAllowed = APP_CONSTANTS.ALLOWED_MIME_TYPES.includes(mimeType);
     
-    console.log(`[FILE VALIDATION] Extensión permitida: ${extensionAllowed}`);
-    console.log(`[FILE VALIDATION] MIME permitido: ${mimeAllowed}`);
-    
     const allowed = extensionAllowed || mimeAllowed;
-    console.log(`[FILE VALIDATION] Archivo permitido: ${allowed}`);
     
-    return allowed;
+    return { allowed };
   }
   
   /**
@@ -138,10 +136,10 @@ export class FileUtils {
     
     fileArray.forEach((file, index) => {
       // Verificar tipo
-      if (!this.isFileAllowed(file)) {
-        errors.push(
-          `Archivo "${file.name}": Tipo no permitido. Solo se permiten: ${APP_CONSTANTS.ALLOWED_FILE_TYPES.join(', ')}`
-        );
+      const fileCheck = this.isFileAllowed(file);
+      if (!fileCheck.allowed) {
+        const errorMsg = fileCheck.reason || `Archivo "${file.name}": Tipo no permitido. Solo se permiten: ${APP_CONSTANTS.ALLOWED_FILE_TYPES.join(', ')}`;
+        errors.push(errorMsg);
         return;
       }
       

@@ -8,12 +8,14 @@ import {
 import { useAuthFileUpload } from '../../hooks/useAuthFileUpload';
 import Navbar from '../../components/layout/Navbar';
 import { useAuth } from '../../contexts/AuthContext';
+import CloneRepository from './clone-repo';
 
 export default function UploadPage() {
   const { isAuthenticated } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [student, setStudent] = useState("estudiante1");
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [uploadMode, setUploadMode] = useState<"file" | "repo" | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Usar el hook de upload con autenticación
@@ -37,7 +39,6 @@ export default function UploadPage() {
     const extension = fileName.split('.').pop()?.toLowerCase();
     switch (extension) {
       case 'zip': return '🗜️';
-      case 'rar': return '📦';
       case 'js': case 'jsx': return '📄';
       case 'ts': case 'tsx': return '📘';
       case 'py': return '🐍';
@@ -101,11 +102,14 @@ export default function UploadPage() {
     // Validar archivo usando las utilidades
     const { valid, errors } = FileUtils.validateFiles([file]);
     if (errors.length > 0) {
-      console.error('Errores de validación:', errors);
+      setValidationErrors(errors);
       return;
     }
 
-    const result = await uploadFile(file, isAuthenticated ? undefined : student);
+    // Limpiar errores previos
+    setValidationErrors([]);
+
+    const result = await uploadFile(file);
 
     if (result) {
       // Redirigir al dashboard después del éxito
@@ -117,6 +121,7 @@ export default function UploadPage() {
 
   const removeFile = () => {
     setFile(null);
+    setValidationErrors([]);
     resetUpload();
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -156,22 +161,63 @@ export default function UploadPage() {
             )}
           </div>
 
-        {/* Student Input - Solo para usuarios no autenticados */}
-        {!isAuthenticated && (
-          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Información del Estudiante</h2>
-            <div className="flex items-center space-x-4">
-              <label className="flex-shrink-0 text-gray-700 font-medium">Nombre del estudiante:</label>
-              <input
-                type="text"
-                value={student}
-                onChange={(e) => setStudent(e.target.value)}
-                className="flex-1 px-4 py-2 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                placeholder="Ingresa tu nombre"
-              />
+        {/* Upload Mode Selection - Tarjetas */}
+        {!uploadMode && (
+          <div className="mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Tarjeta: Subir Archivo */}
+              <div
+                onClick={() => setUploadMode("file")}
+                className="rounded-2xl shadow-lg overflow-hidden transition-all transform duration-300 cursor-pointer hover:shadow-xl hover:scale-102"
+              >
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 px-8 py-12 text-white text-center">
+                  <div className="text-5xl mb-4">📦</div>
+                  <h3 className="text-2xl font-bold mb-3">Subir Archivo</h3>
+                  <p className="text-blue-100">Comprime tu proyecto en ZIP y súbelo directamente</p>
+                </div>
+                <div className="bg-white px-8 py-6">
+                  <ul className="text-gray-700 text-sm space-y-2">
+                    <li>✓ Archivos ZIP soportados</li>
+                    <li>✓ Tamaño máximo configurable</li>
+                    <li>✓ Análisis inmediato</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Tarjeta: Clonar Repositorio */}
+              <div
+                onClick={() => isAuthenticated ? setUploadMode("repo") : window.location.href = "/auth/login"}
+                className="rounded-2xl shadow-lg overflow-hidden transition-all transform duration-300 cursor-pointer hover:shadow-xl hover:scale-102"
+              >
+                <div className="bg-gradient-to-br from-purple-500 to-purple-600 px-8 py-12 text-white text-center">
+                  <div className="text-5xl mb-4">🔗</div>
+                  <h3 className="text-2xl font-bold mb-3">Clonar Repositorio</h3>
+                  <p className="text-purple-100">Analiza un repositorio público de Git directamente</p>
+                </div>
+                <div className="bg-white px-8 py-6">
+                  <ul className="text-gray-700 text-sm space-y-2">
+                    <li>✓ GitHub, GitLab, Bitbucket</li>
+                    <li>✓ Repositorios públicos</li>
+                    <li>✓ Clone automático</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         )}
+
+        {/* Contenido expandible según selección */}
+        {uploadMode === "file" && (
+          <div>
+            <button
+              onClick={() => setUploadMode(null)}
+              className="mb-6 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-medium"
+            >
+              ← Volver a opciones
+            </button>
+
+            {/* Upload Area */}
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
 
         {/* Upload Area */}
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -235,7 +281,7 @@ export default function UploadPage() {
                 type="file"
                 onChange={handleFileSelect}
                 className="hidden"
-                accept=".zip,.rar,.tar,.gz,.js,.jsx,.ts,.tsx,.py,.java,.cpp,.c,.html,.css"
+                accept=".zip,.tar,.gz,.js,.jsx,.ts,.tsx,.py,.java,.cpp,.c,.html,.css"
               />
             </div>
 
@@ -245,7 +291,6 @@ export default function UploadPage() {
               <div className="flex flex-wrap gap-2">
                 {[
                   { ext: '.zip', icon: '🗜️' },
-                  { ext: '.rar', icon: '📦' },
                   { ext: '.js/.jsx', icon: '📄' },
                   { ext: '.ts/.tsx', icon: '📘' },
                   { ext: '.py', icon: '🐍' },
@@ -258,11 +303,36 @@ export default function UploadPage() {
                   </span>
                 ))}
               </div>
+              <p className="text-sm text-blue-700 mt-3">
+                ℹ️ <strong>Nota:</strong> Los archivos .rar no son soportados. Por favor utiliza archivos .zip para comprimir tu proyecto.
+              </p>
             </div>
           </div>
 
           {/* Status & Upload Button */}
           <div className="bg-gray-50 px-8 py-6">
+            {/* Mostrar errores de validación */}
+            {validationErrors.length > 0 && (
+              <div className="mb-4 p-4 rounded-lg bg-red-100 text-red-800 border border-red-300">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h4 className="font-semibold mb-2">Errores de validación:</h4>
+                    <ul className="list-disc list-inside space-y-1">
+                      {validationErrors.map((error, index) => (
+                        <li key={index} className="text-sm">{error}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <button
+                    onClick={() => setValidationErrors([])}
+                    className="ml-4 text-red-600 hover:text-red-800 flex-shrink-0"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Mostrar errores de upload */}
             {uploadError && (
               <div className="mb-4 p-4 rounded-lg bg-red-100 text-red-800">
@@ -330,6 +400,22 @@ export default function UploadPage() {
             </div>
           </div>
         </div>
+            </div>
+          </div>
+        )}
+
+        {/* Clone Repository Section - Solo si uploadMode es "repo" */}
+        {uploadMode === "repo" && (
+          <div>
+            <button
+              onClick={() => setUploadMode(null)}
+              className="mb-6 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-medium"
+            >
+              ← Volver a opciones
+            </button>
+            <CloneRepository />
+          </div>
+        )}
 
         {/* Features */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">

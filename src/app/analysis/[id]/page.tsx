@@ -416,6 +416,148 @@ const AnalysisDetailPage: React.FC = () => {
                     {/* Detailed findings */}
                     {analysis.findings && typeof analysis.findings === 'object' && (
                       <div className="space-y-4">
+                        {/* Handle new structure with summary and results */}
+                        {analysis.findings.summary && (
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                            <h4 className="font-semibold text-blue-900 mb-3">Resumen de Herramientas</h4>
+                            <div className="grid grid-cols-3 gap-4 text-sm mb-4">
+                              <div>
+                                <span className="text-blue-600 font-semibold">Herramientas ejecutadas:</span>
+                                <span className="ml-2">{analysis.findings.summary.toolsExecuted}</span>
+                              </div>
+                              <div>
+                                <span className="text-green-600 font-semibold">Exitosas:</span>
+                                <span className="ml-2">{analysis.findings.summary.successfulTools}</span>
+                              </div>
+                              <div>
+                                <span className="text-red-600 font-semibold">Fallidas:</span>
+                                <span className="ml-2">{analysis.findings.summary.failedTools}</span>
+                              </div>
+                            </div>
+                            
+                            {/* Contribution of each tool */}
+                            <div className="border-t border-blue-200 pt-3">
+                              <p className="text-xs font-semibold text-blue-900 mb-2">Hallazgos por herramienta:</p>
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                {analysis.findings.results && Object.entries(analysis.findings.results).map(([tool, toolResult]: [string, any]) => (
+                                  toolResult.findingsCount > 0 && (
+                                    <div key={tool} className="bg-white rounded p-2 text-center text-xs">
+                                      <div className="font-semibold text-gray-900">{toolResult.findingsCount}</div>
+                                      <div className="text-gray-600 truncate">{tool === 'direct-detection' ? 'Patrones' : tool}</div>
+                                    </div>
+                                  )
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Display results by tool */}
+                        {analysis.findings.results && Object.entries(analysis.findings.results).map(([tool, toolResult]: [string, any], index) => (
+                          <div key={index} className="border border-gray-200 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="font-semibold text-gray-900 capitalize flex items-center">
+                                {tool === 'direct-detection' ? '🔎' : '🔧'} {tool === 'direct-detection' ? 'Análisis Complementario de Patrones' : tool}
+                                {toolResult.success ? (
+                                  <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Exitosa</span>
+                                ) : (
+                                  <span className="ml-2 text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Error</span>
+                                )}
+                              </h4>
+                              <span className="text-sm text-gray-600">
+                                {toolResult.findingsCount || 0} hallazgos
+                              </span>
+                            </div>
+                            
+                            {tool === 'direct-detection' && (
+                              <div className="bg-blue-50 border border-blue-200 rounded p-2 mb-3 text-xs text-blue-800">
+                                ℹ️ Este es un análisis complementario basado en patrones de código para detectar vulnerabilidades comunes que otras herramientas pueden pasar por alto.
+                              </div>
+                            )}
+                            
+                            {toolResult.error && (
+                              <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mb-3 text-sm text-yellow-800">
+                                ⚠️ {toolResult.error}
+                              </div>
+                            )}
+                            
+                            {Array.isArray(toolResult.findings) && toolResult.findings.length > 0 ? (
+                              <div className="space-y-3">
+                                {toolResult.findings.map((finding: any, fIndex: number) => (
+                                  <div key={fIndex} className="bg-gray-50 rounded-lg p-3">
+                                    <div className="flex items-start space-x-3">
+                                      <span className="text-lg">
+                                        {getSeverityIcon(finding.severity || 'medium')}
+                                      </span>
+                                      <div className="flex-1">
+                                        <div className="font-medium text-gray-900">
+                                          {finding.rule || finding.type || 'Problema detectado'}
+                                        </div>
+                                        <div className="text-sm text-gray-600 mt-1">
+                                          {finding.message || finding.description || 'Sin descripción disponible'}
+                                        </div>
+                                        {finding.file && (
+                                          <div className="text-xs text-gray-500 mt-2">
+                                            📁 {finding.file}
+                                            {finding.line && ` (línea ${finding.line})`}
+                                          </div>
+                                        )}
+                                        
+                                        {/* Show which tools detected this finding */}
+                                        {analysis.findings.deduplicationMap && (
+                                          (() => {
+                                            const filePath = finding.path || finding.file || finding.sourcefile || finding.fileName || '';
+                                            const line = finding.line || finding.start?.line || finding.startLine || '';
+                                            const message = (finding.message || finding.rule || finding.type || '').substring(0, 100);
+                                            const key = `${filePath}:${line}:${message}`;
+                                            const detectedByTools = analysis.findings.deduplicationMap[key];
+                                            
+                                            if (detectedByTools && detectedByTools.length > 1) {
+                                              return (
+                                                <div className="mt-2 text-xs">
+                                                  <span className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                                                    Detectado por: {detectedByTools.join(', ')}
+                                                  </span>
+                                                </div>
+                                              );
+                                            }
+                                            return null;
+                                          })()
+                                        )}
+                                        
+                                        {finding._missionId && (
+                                          <div className="mt-2">
+                                            <button
+                                              onClick={() => {
+                                                setActiveTab('missions');
+                                                // esperar a que el tab se renderice
+                                                setTimeout(() => {
+                                                  const el = document.getElementById(`mission-${finding._missionId}`);
+                                                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                                }, 200);
+                                              }}
+                                              className="text-sm text-blue-600 underline"
+                                            >
+                                              Ver misión relacionada (#{finding._missionId})
+                                            </button>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-gray-600 text-sm">No se encontraron problemas con esta herramienta.</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )} 
+                    
+                    {/* Fallback for old structure without summary/results */}
+                    {analysis.findings && typeof analysis.findings === 'object' && !analysis.findings.summary && !analysis.findings.results && (
+                      <div className="space-y-4">
                         {Object.entries(analysis.findings).map(([tool, findings]: [string, any], index) => (
                           <div key={index} className="border border-gray-200 rounded-lg p-4">
                             <h4 className="font-semibold text-gray-900 mb-3 capitalize">
