@@ -7,6 +7,7 @@ import { Analysis, Mission } from '../../../types/auth';
 import apiService from '../../../services/api';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
+import ReactMarkdown from 'react-markdown';
 
 const AnalysisDetailPage: React.FC = () => {
   const params = useParams();
@@ -378,7 +379,11 @@ const AnalysisDetailPage: React.FC = () => {
                               <div className={`text-xs font-semibold px-2 py-1 rounded ${m.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : m.status === 'fixed' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>{m.status}</div>
                             </div>
                             <div className="text-lg font-semibold mt-2">{m.title || 'Sin título'}</div>
-                            {m.description && <div className="text-sm text-gray-600 mt-1 whitespace-pre-line">{m.description}</div>}
+                            {m.description && (
+                              <div className="text-sm text-gray-600 mt-1 prose prose-sm max-w-none">
+                                <ReactMarkdown>{m.description}</ReactMarkdown>
+                              </div>
+                            )}
                             <div className="text-xs text-gray-400 mt-2">Archivo: {m.filePath || 'N/A'} {m.lineStart ? `: L${m.lineStart}` : ''}</div>
                           </div>
 
