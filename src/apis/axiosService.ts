@@ -84,7 +84,7 @@ export class ApiService {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-        timeout: 120000, // 2 minutos para uploads de archivos grandes
+        timeout: 600000, // 10 minutos para análisis de archivos grandes
         onUploadProgress: (progressEvent) => {
           if (onProgress && progressEvent.total) {
             const percentage = Math.round((progressEvent.loaded * 100) / progressEvent.total);
