@@ -155,7 +155,7 @@ const MyAnalysesPage: React.FC = () => {
 
         {/* Summary Cards */}
         {summary && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
             <div className="bg-white rounded-lg shadow p-6 text-center">
               <div className="text-3xl font-bold text-blue-600">{summary.totalAnalyses}</div>
               <div className="text-gray-600">Análisis Totales</div>
@@ -173,6 +173,14 @@ const MyAnalysesPage: React.FC = () => {
             <div className="bg-white rounded-lg shadow p-6 text-center">
               <div className="text-3xl font-bold text-red-600">{summary.highSeverityIssues}</div>
               <div className="text-gray-600">Críticos</div>
+            </div>
+            <div className="bg-white rounded-lg shadow p-6 text-center">
+              <div className="text-3xl font-bold text-yellow-500">{summary.mediumSeverityIssues || 0}</div>
+              <div className="text-gray-600">Medios</div>
+            </div>
+            <div className="bg-white rounded-lg shadow p-6 text-center">
+              <div className="text-3xl font-bold text-gray-500">{summary.lowSeverityIssues || 0}</div>
+              <div className="text-gray-600">Leves</div>
             </div>
           </div>
         )}
