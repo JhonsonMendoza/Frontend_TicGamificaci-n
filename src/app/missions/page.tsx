@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import apiService from '../../services/api';
 import { Mission } from '../../types/auth';
 import toast from 'react-hot-toast';
+import ReactMarkdown from 'react-markdown';
 
 const MissionsPage: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
@@ -74,10 +75,14 @@ const MissionsPage: React.FC = () => {
               
               return (
                 <div key={m.id} className="bg-white rounded-lg shadow p-4 flex items-start justify-between">
-                  <div>
+                  <div className="flex-1 pr-4">
                     <div className={`text-sm font-semibold ${severityColor}`}>{severityText}</div>
                     <div className="text-lg font-semibold">{m.title || 'Sin título'}</div>
-                    <div className="text-sm text-gray-600 mt-1">{m.description || 'Sin descripción'}</div>
+                    {m.description && (
+                      <div className="text-sm text-gray-600 mt-2 prose prose-sm max-w-none">
+                        <ReactMarkdown>{m.description}</ReactMarkdown>
+                      </div>
+                    )}
                     <div className="text-xs text-gray-400 mt-2">Archivo: {m.filePath || 'N/A'} {m.lineStart ? `: L${m.lineStart}` : ''}</div>
                   </div>
 
