@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from '../../contexts/AuthContext';
 import Cookies from 'js-cookie';
 
@@ -7,12 +7,26 @@ interface CloneRepoProps {
   onSuccess?: (analysisId: number) => void;
 }
 
+// Etapas del proceso de análisis
+const ANALYSIS_STAGES = [
+  { id: 1, label: 'Conectando con el repositorio...', duration: 2000 },
+  { id: 2, label: 'Clonando archivos del repositorio...', duration: 4000 },
+  { id: 3, label: 'Detectando lenguajes de programación...', duration: 2000 },
+  { id: 4, label: 'Ejecutando SpotBugs (análisis Java)...', duration: 5000 },
+  { id: 5, label: 'Ejecutando PMD (calidad de código)...', duration: 4000 },
+  { id: 6, label: 'Ejecutando Semgrep (seguridad)...', duration: 4000 },
+  { id: 7, label: 'Generando misiones educativas...', duration: 2000 },
+  { id: 8, label: 'Calculando puntuación de calidad...', duration: 1000 },
+];
+
 export default function CloneRepository({ onSuccess }: CloneRepoProps) {
   const { isAuthenticated } = useAuth();
   const [repoUrl, setRepoUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [currentStage, setCurrentStage] = useState(0);
+  const [progress, setProgress] = useState(0);
 
   // Obtener el token del localStorage
   const getToken = () => {
@@ -21,6 +35,50 @@ export default function CloneRepository({ onSuccess }: CloneRepoProps) {
     }
     return null;
   };
+
+  // Efecto para manejar la progresión de las etapas
+  useEffect(() => {
+    if (!isLoading) {
+      setCurrentStage(0);
+      setProgress(0);
+      return;
+    }
+
+    let stageIndex = 0;
+    let stageProgress = 0;
+    const totalStages = ANALYSIS_STAGES.length;
+
+    const advanceProgress = () => {
+      if (stageIndex >= totalStages) return;
+
+      const currentDuration = ANALYSIS_STAGES[stageIndex].duration;
+      const progressIncrement = 100 / (currentDuration / 100); // Incremento cada 100ms
+
+      stageProgress += progressIncrement;
+
+      if (stageProgress >= 100) {
+        stageProgress = 0;
+        stageIndex++;
+        if (stageIndex < totalStages) {
+          setCurrentStage(stageIndex);
+        }
+      }
+
+      // Calcular progreso total
+      const baseProgress = (stageIndex / totalStages) * 100;
+      const stageContribution = (stageProgress / 100) * (100 / totalStages);
+      const totalProgress = Math.min(baseProgress + stageContribution, 95); // Máximo 95% hasta que termine
+      
+      setProgress(Math.round(totalProgress));
+    };
+
+    setCurrentStage(0);
+    setProgress(0);
+
+    const interval = setInterval(advanceProgress, 100);
+
+    return () => clearInterval(interval);
+  }, [isLoading]);
 
   const validateRepositoryUrl = (url: string): boolean => {
     try {
@@ -113,6 +171,10 @@ export default function CloneRepository({ onSuccess }: CloneRepoProps) {
       const data = await response.json();
 
       if (data.success && data.data) {
+        // Completar la barra de progreso al 100%
+        setProgress(100);
+        setCurrentStage(ANALYSIS_STAGES.length);
+        
         setSuccess(
           `✅ ¡Repositorio analizado exitosamente!\n` +
           `ID de análisis: ${data.data.id}\n` +
@@ -287,6 +349,124 @@ export default function CloneRepository({ onSuccess }: CloneRepoProps) {
             transform: rotate(360deg);
           }
         }
+
+        .progress-container {
+          margin-top: 1.5rem;
+          padding: 1.5rem;
+          background-color: rgba(255, 255, 255, 0.15);
+          border-radius: 10px;
+          backdrop-filter: blur(10px);
+        }
+
+        .progress-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 0.75rem;
+        }
+
+        .progress-header span {
+          font-weight: 600;
+          font-size: 1rem;
+        }
+
+        .progress-percentage {
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: #ffd700;
+        }
+
+        .progress-bar-outer {
+          width: 100%;
+          height: 12px;
+          background-color: rgba(255, 255, 255, 0.2);
+          border-radius: 6px;
+          overflow: hidden;
+          margin-bottom: 1rem;
+        }
+
+        .progress-bar-inner {
+          height: 100%;
+          background: linear-gradient(90deg, #4ade80 0%, #22c55e 50%, #16a34a 100%);
+          border-radius: 6px;
+          transition: width 0.3s ease;
+          box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+        }
+
+        .progress-stage {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          font-size: 0.95rem;
+          color: rgba(255, 255, 255, 0.95);
+        }
+
+        .stage-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 24px;
+          height: 24px;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 50%;
+          font-size: 0.8rem;
+        }
+
+        .progress-stages-list {
+          margin-top: 1rem;
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.5rem;
+        }
+
+        .stage-item {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.8rem;
+          opacity: 0.6;
+          transition: all 0.3s ease;
+        }
+
+        .stage-item.active {
+          opacity: 1;
+          font-weight: 600;
+        }
+
+        .stage-item.completed {
+          opacity: 0.8;
+          color: #4ade80;
+        }
+
+        .stage-check {
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.65rem;
+          background: rgba(255, 255, 255, 0.2);
+        }
+
+        .stage-item.completed .stage-check {
+          background: #4ade80;
+          color: white;
+        }
+
+        .stage-item.active .stage-check {
+          background: #ffd700;
+          animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+          0%, 100% {
+            box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4);
+          }
+          50% {
+            box-shadow: 0 0 0 8px rgba(255, 215, 0, 0);
+          }
+        }
       `}</style>
 
       <div className="clone-repo-header">
@@ -315,7 +495,7 @@ export default function CloneRepository({ onSuccess }: CloneRepoProps) {
           {isLoading ? (
             <>
               <span className="loading-spinner"></span>
-              Clonando...
+              Analizando...
             </>
           ) : (
             <>
@@ -324,6 +504,41 @@ export default function CloneRepository({ onSuccess }: CloneRepoProps) {
           )}
         </button>
       </form>
+
+      {isLoading && (
+        <div className="progress-container">
+          <div className="progress-header">
+            <span>🔄 Progreso del Análisis</span>
+            <span className="progress-percentage">{progress}%</span>
+          </div>
+          
+          <div className="progress-bar-outer">
+            <div 
+              className="progress-bar-inner" 
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          
+          <div className="progress-stage">
+            <span className="stage-icon">⚙️</span>
+            <span>{ANALYSIS_STAGES[currentStage]?.label || 'Procesando...'}</span>
+          </div>
+
+          <div className="progress-stages-list">
+            {ANALYSIS_STAGES.map((stage, index) => (
+              <div 
+                key={stage.id}
+                className={`stage-item ${index < currentStage ? 'completed' : ''} ${index === currentStage ? 'active' : ''}`}
+              >
+                <span className="stage-check">
+                  {index < currentStage ? '✓' : index === currentStage ? '●' : '○'}
+                </span>
+                <span>{stage.label.replace('...', '')}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="alert alert-error">
