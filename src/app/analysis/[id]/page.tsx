@@ -92,9 +92,14 @@ const AnalysisDetailPage: React.FC = () => {
   };
 
   const formatScore = (score: any, digits: number = 1) => {
+    // Si es null, undefined o string vacío, devolver '0.0'
+    if (score === null || score === undefined || score === '') return '0.0';
     const n = typeof score === 'string' ? parseFloat(score) : score;
-    if (typeof n !== 'number' || !isFinite(n)) return 'N/A';
-    return n.toFixed(digits);
+    // Si no es un número válido, devolver '0.0' en lugar de N/A
+    if (typeof n !== 'number' || !isFinite(n)) return '0.0';
+    // Asegurar que el score esté entre 0 y 100
+    const clampedScore = Math.max(0, Math.min(100, n));
+    return clampedScore.toFixed(digits);
   };
 
   const getSeverityColor = (severity: string) => {

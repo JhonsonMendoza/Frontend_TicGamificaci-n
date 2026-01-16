@@ -295,7 +295,7 @@ export default function Dashboard() {
                                 <span className="text-gray-500 font-medium">{analysis.lowSeverityIssues || 0}L</span>
                               </div>
                               <div>
-                                <span className="font-medium">Puntuación:</span> {analysis.qualityScore || 'N/A'}/10
+                                <span className="font-medium">Puntuación:</span> {typeof analysis.qualityScore === 'number' ? Math.max(0, analysis.qualityScore).toFixed(1) : '0.0'}/100
                               </div>
                               <div>
                                 <span className="font-medium">Fecha:</span> {formatDate(analysis.createdAt)}
