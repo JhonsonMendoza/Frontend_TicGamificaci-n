@@ -124,15 +124,8 @@ export default function Dashboard() {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 1) return 'Hace 1 día';
-    if (diffDays < 7) return `Hace ${diffDays} días`;
-    if (diffDays < 30) return `Hace ${Math.ceil(diffDays / 7)} semanas`;
-    return date.toLocaleDateString('es-ES');
+    // Usar formato de fecha exacto como en "Mis Análisis"
+    return new Date(dateString).toLocaleString('es-ES');
   };
 
   const getStatusBadge = (status: string) => {
