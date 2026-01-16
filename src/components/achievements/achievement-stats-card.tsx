@@ -12,13 +12,15 @@ const AchievementStatsCard: React.FC<AchievementStatsCardProps> = ({ stats }) =>
   const completionPercentage = Math.round(stats.completionPercentage);
 
   return (
-    <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-lg border-2 border-gradient-to-r border-blue-200 dark:border-gray-700 overflow-hidden">
-      {/* Encabezado con gradiente */}
-      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-8 text-white">
-        <div className="flex items-center gap-4 mb-2">
-          <FaTrophy className="text-3xl drop-shadow-lg" />
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      {/* Encabezado con gradiente azul consistente */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-white/20 rounded-xl">
+            <FaTrophy className="text-2xl" />
+          </div>
           <div>
-            <h3 className="text-3xl font-bold">Resumen de Logros</h3>
+            <h3 className="text-2xl font-bold">Resumen de Logros</h3>
             <p className="text-blue-100">
               {stats.unlockedCount} de {stats.totalAchievements} desbloqueados
             </p>
@@ -82,13 +84,13 @@ const AchievementStatsCard: React.FC<AchievementStatsCardProps> = ({ stats }) =>
         <div>
           <div className="flex justify-between items-center mb-3">
             <span className="font-semibold text-gray-700 dark:text-gray-300">Progreso General</span>
-            <span className="text-2xl font-bold text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text">
+            <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
               {completionPercentage}%
             </span>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 overflow-hidden shadow-inner">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full transition-all duration-500 ease-out shadow-lg"
+              className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500 ease-out"
               style={{
                 width: `${completionPercentage}%`,
               }}

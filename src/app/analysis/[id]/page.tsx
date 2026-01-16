@@ -129,6 +129,8 @@ const AnalysisDetailPage: React.FC = () => {
   };
 
   const [uploadingAnalysis, setUploadingAnalysis] = useState(false);
+  const [showReanalyzeModal, setShowReanalyzeModal] = useState(false);
+  const [repoUrl, setRepoUrl] = useState('');
 
   const handleAnalysisFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -138,13 +140,50 @@ const AnalysisDetailPage: React.FC = () => {
       setUploadingAnalysis(true);
       const resp = await apiService.reanalyzeAnalysis(Number(analysisId), file);
       if (resp.success) {
-        toast.success('Re-análisis enviado. Se generó un nuevo análisis.');
-        // Opcional: redirigir al nuevo análisis si el backend devuelve id
-        if (resp.data?.id) {
-          router.push(`/analysis/${resp.data.id}`);
+        // Verificar si es un proyecto diferente (la respuesta viene en resp.data)
+        const isNewProject = resp.data?.isNewProject;
+        if (isNewProject) {
+          toast.error('⚠️ El proyecto enviado es diferente al original. Se ha creado un nuevo análisis.');
+        } else {
+          toast.success('✅ Re-análisis completado. Proyecto actualizado.');
+        }
+        if (resp.data?.data?.id || resp.data?.id) {
+          router.push(`/analysis/${resp.data?.data?.id || resp.data?.id}`);
           return;
         }
-        // Si no, recargar el actual
+        await loadAnalysis();
+      } else {
+        toast.error(resp.message || 'Error al enviar re-análisis');
+      }
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || 'Error en re-análisis';
+      toast.error(msg);
+    } finally {
+      setUploadingAnalysis(false);
+    }
+  };
+
+  const handleReanalyzeFromRepo = async () => {
+    if (!repoUrl.trim()) {
+      toast.error('Ingresa la URL del repositorio');
+      return;
+    }
+
+    try {
+      setUploadingAnalysis(true);
+      const resp = await apiService.reanalyzeAnalysis(Number(analysisId), undefined, repoUrl.trim());
+      if (resp.success) {
+        const isNewProject = resp.data?.isNewProject;
+        if (isNewProject) {
+          toast.error('⚠️ El proyecto enviado es diferente al original. Se ha creado un nuevo análisis.');
+        } else {
+          toast.success('✅ Re-análisis completado. Proyecto actualizado.');
+        }
+        setShowReanalyzeModal(false);
+        if (resp.data?.data?.id || resp.data?.id) {
+          router.push(`/analysis/${resp.data?.data?.id || resp.data?.id}`);
+          return;
+        }
         await loadAnalysis();
       } else {
         toast.error(resp.message || 'Error al enviar re-análisis');
@@ -234,10 +273,24 @@ const AnalysisDetailPage: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center space-x-3">
-              <label className="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded cursor-pointer">
-                {uploadingAnalysis ? 'Subiendo...' : 'Subir Corrección / Re-análisis'}
-                <input type="file" className="hidden" onChange={handleAnalysisFileChange} />
-              </label>
+              {/* Si fue analizado por repositorio, mostrar botón para re-análisis por repo */}
+              {analysis.repositoryUrl ? (
+                <button
+                  onClick={() => {
+                    setRepoUrl(analysis.repositoryUrl || '');
+                    setShowReanalyzeModal(true);
+                  }}
+                  disabled={uploadingAnalysis}
+                  className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                >
+                  {uploadingAnalysis ? '⏳ Procesando...' : '🔄 Re-analizar desde Repositorio'}
+                </button>
+              ) : (
+                <label className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded cursor-pointer hover:bg-blue-700">
+                  {uploadingAnalysis ? '⏳ Procesando...' : '📁 Subir Corrección (.zip)'}
+                  <input type="file" accept=".zip" className="hidden" onChange={handleAnalysisFileChange} disabled={uploadingAnalysis} />
+                </label>
+              )}
               <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(analysis.status)}`}>
                 {analysis.status === 'completed' ? 'Completado' : 
                  analysis.status === 'processing' ? 'Procesando' : 
@@ -366,34 +419,98 @@ const AnalysisDetailPage: React.FC = () => {
 
             {activeTab === 'missions' && (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold mb-4">Tareas / Misiones para este proyecto</h3>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                    <span>🎯</span> Misiones de este proyecto
+                  </h3>
+                  {missions.length > 0 && (
+                    <div className="flex gap-3 text-sm">
+                      <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full font-medium">
+                        {missions.filter(m => m.status === 'pending').length} pendientes
+                      </span>
+                      <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full font-medium">
+                        {missions.filter(m => m.status === 'fixed').length} resueltas
+                      </span>
+                    </div>
+                  )}
+                </div>
 
                 {missions.length === 0 ? (
-                  <div className="bg-white rounded-lg shadow p-6 text-center">No hay misiones generadas para este análisis</div>
+                  <div className="bg-gray-50 rounded-xl p-8 text-center border-2 border-dashed border-gray-200">
+                    <div className="text-5xl mb-3">🎉</div>
+                    <h4 className="text-lg font-semibold text-gray-800 mb-1">¡Excelente trabajo!</h4>
+                    <p className="text-gray-500">No hay misiones generadas para este análisis.</p>
+                  </div>
                 ) : (
                   <div className="space-y-4">
                     {missions.map(m => {
-                      const severityText = (m.severity || 'medium').toUpperCase();
-                      const severityColor = m.severity === 'high' ? 'text-red-600' : m.severity === 'medium' ? 'text-yellow-600' : 'text-green-600';
+                      const isFixed = m.status === 'fixed';
+                      const severityConfig = {
+                        high: { color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', icon: '🔴', label: 'CRÍTICO' },
+                        medium: { color: 'text-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200', icon: '🟡', label: 'MEDIO' },
+                        low: { color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', icon: '🔵', label: 'LEVE' },
+                      };
+                      const severity = severityConfig[m.severity as keyof typeof severityConfig] || severityConfig.medium;
                       
                       return (
-                        <div id={`mission-${m.id}`} key={m.id} className="bg-white rounded-lg shadow p-4 flex items-start justify-between">
-                          <div className="flex-1 pr-4">
-                            <div className="flex items-center justify-between">
-                              <div className={`text-sm font-semibold ${severityColor}`}>{severityText}</div>
-                              <div className={`text-xs font-semibold px-2 py-1 rounded ${m.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : m.status === 'fixed' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>{m.status}</div>
+                        <div 
+                          id={`mission-${m.id}`} 
+                          key={m.id} 
+                          className={`bg-white rounded-xl border-2 ${isFixed ? 'border-green-200 bg-green-50/30' : severity.border} transition-all hover:shadow-md`}
+                        >
+                          <div className="p-5">
+                            {/* Header */}
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg">{severity.icon}</span>
+                                <span className={`text-xs font-bold px-2 py-1 rounded ${severity.bg} ${severity.color}`}>
+                                  {severity.label}
+                                </span>
+                                {isFixed && (
+                                  <span className="text-xs font-bold px-2 py-1 rounded bg-green-100 text-green-700">
+                                    ✓ RESUELTO
+                                  </span>
+                                )}
+                              </div>
+                              {!isFixed && (
+                                <button 
+                                  onClick={() => handleMarkMissionFixed(m.id)} 
+                                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                                >
+                                  ✓ Marcar como corregida
+                                </button>
+                              )}
                             </div>
-                            <div className="text-lg font-semibold mt-2">{m.title || 'Sin título'}</div>
+                            
+                            {/* Título */}
+                            <h4 className={`text-lg font-semibold mb-2 ${isFixed ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
+                              {m.title || 'Sin título'}
+                            </h4>
+                            
+                            {/* Descripción */}
                             {m.description && (
-                              <div className="text-sm text-gray-600 mt-1 prose prose-sm max-w-none">
-                                <ReactMarkdown>{m.description}</ReactMarkdown>
+                              <div className={`text-sm mt-3 p-4 rounded-lg ${isFixed ? 'bg-gray-50 text-gray-500' : 'bg-gray-50 text-gray-700'}`}>
+                                <ReactMarkdown
+                                  components={{
+                                    p: ({children}) => <p className="mb-2 last:mb-0">{children}</p>,
+                                    strong: ({children}) => <strong className="font-semibold">{children}</strong>,
+                                    ul: ({children}) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
+                                    li: ({children}) => <li className="mb-1">{children}</li>,
+                                  }}
+                                >
+                                  {m.description}
+                                </ReactMarkdown>
                               </div>
                             )}
-                            <div className="text-xs text-gray-400 mt-2">Archivo: {m.filePath || 'N/A'} {m.lineStart ? `: L${m.lineStart}` : ''}</div>
-                          </div>
-
-                          <div className="flex flex-col items-end space-y-2">
-                            <button onClick={() => handleMarkMissionFixed(m.id)} className="px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">Marcar como corregida</button>
+                            
+                            {/* Footer */}
+                            <div className="flex items-center gap-4 mt-4 pt-3 border-t border-gray-100">
+                              <div className="flex items-center gap-1 text-xs text-gray-400">
+                                <span>📄</span>
+                                <span className="font-mono">{m.filePath || 'N/A'}</span>
+                                {m.lineStart && <span className="text-blue-500">:L{m.lineStart}</span>}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       );
@@ -473,6 +590,41 @@ const AnalysisDetailPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal de Re-análisis por Repositorio */}
+      {showReanalyzeModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg mx-4">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">🔄 Re-analizar desde Repositorio</h3>
+            <p className="text-gray-600 mb-4">
+              Ingresa la URL del repositorio Git para re-analizar el proyecto.
+              Si el proyecto es el mismo, se actualizarán las misiones. Si es diferente, se creará un nuevo análisis.
+            </p>
+            <input
+              type="text"
+              value={repoUrl}
+              onChange={(e) => setRepoUrl(e.target.value)}
+              placeholder="https://github.com/usuario/repositorio"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowReanalyzeModal(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleReanalyzeFromRepo}
+                disabled={uploadingAnalysis || !repoUrl.trim()}
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+              >
+                {uploadingAnalysis ? '⏳ Analizando...' : '🚀 Re-analizar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

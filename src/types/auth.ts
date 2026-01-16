@@ -46,6 +46,7 @@ export interface Analysis {
   student: string;
   originalFileName?: string;
   fileSize?: number;
+  repositoryUrl?: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
   findings?: any;
   totalIssues: number;

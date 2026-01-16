@@ -151,9 +151,14 @@ class ApiService {
     return response.data;
   }
 
-  async reanalyzeAnalysis(analysisId: number, file: File): Promise<ApiResponse<any>> {
+  async reanalyzeAnalysis(analysisId: number, file?: File, repositoryUrl?: string): Promise<ApiResponse<any>> {
     const formData = new FormData();
-    formData.append('file', file);
+    if (file) {
+      formData.append('file', file);
+    }
+    if (repositoryUrl) {
+      formData.append('repositoryUrl', repositoryUrl);
+    }
     const response = await this.api.post(`/analysis/${analysisId}/reanalyze`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 5 * 60 * 1000,
