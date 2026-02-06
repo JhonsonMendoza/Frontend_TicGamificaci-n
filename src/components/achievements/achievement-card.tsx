@@ -49,7 +49,7 @@ const AchievementCard: React.FC<AchievementCardProps> = ({ achievement }) => {
     <div
       className={`relative rounded-xl border-2 transition-all duration-300 overflow-hidden ${
         achievement.isUnlocked
-          ? 'border-yellow-400 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/30 dark:to-orange-900/30 shadow-md hover:shadow-lg'
+          ? 'border-green-400 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 shadow-md hover:shadow-lg'
           : 'border-gray-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600 opacity-70 hover:opacity-85'
       }`}
     >
@@ -68,7 +68,7 @@ const AchievementCard: React.FC<AchievementCardProps> = ({ achievement }) => {
           <div
             className={`text-5xl transition-all duration-300 ${
               achievement.isUnlocked
-                ? 'text-yellow-500 drop-shadow-lg'
+                ? 'text-emerald-600 drop-shadow-lg'
                 : 'text-gray-400 opacity-50'
             }`}
           >
@@ -151,7 +151,7 @@ const AchievementCard: React.FC<AchievementCardProps> = ({ achievement }) => {
         <div
           className={`flex items-center gap-2 text-sm font-semibold transition-colors ${
             achievement.isUnlocked
-              ? 'text-amber-600 dark:text-amber-400'
+              ? 'text-emerald-700 dark:text-emerald-400'
               : 'text-gray-500 dark:text-gray-400'
           }`}
         >
