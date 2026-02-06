@@ -78,16 +78,16 @@ const AchievementCard: React.FC<AchievementCardProps> = ({ achievement }) => {
             <h3
               className={`font-bold text-lg transition-colors ${
                 achievement.isUnlocked
-                  ? 'text-gray-900 dark:text-white'
+                  ? 'text-emerald-900 dark:text-white'
                   : 'text-gray-500 dark:text-gray-400'
               }`}
             >
               {achievement.name}
             </h3>
             <p
-              className={`text-xs transition-colors ${
+              className={`text-xs font-medium transition-colors ${
                 achievement.isUnlocked
-                  ? 'text-gray-600 dark:text-gray-300'
+                  ? 'text-emerald-700 dark:text-gray-300'
                   : 'text-gray-400 dark:text-gray-500'
               }`}
             >
@@ -104,9 +104,9 @@ const AchievementCard: React.FC<AchievementCardProps> = ({ achievement }) => {
 
         {/* Descripción */}
         <p
-          className={`text-sm mb-3 transition-colors ${
+          className={`text-sm font-medium mb-3 transition-colors ${
             achievement.isUnlocked
-              ? 'text-gray-700 dark:text-gray-300'
+              ? 'text-gray-900 dark:text-gray-300'
               : 'text-gray-500 dark:text-gray-400'
           }`}
         >
@@ -117,7 +117,7 @@ const AchievementCard: React.FC<AchievementCardProps> = ({ achievement }) => {
         <p
           className={`text-xs mb-3 italic transition-colors ${
             achievement.isUnlocked
-              ? 'text-gray-600 dark:text-gray-400'
+              ? 'text-gray-800 dark:text-gray-400'
               : 'text-gray-400 dark:text-gray-500'
           }`}
         >
