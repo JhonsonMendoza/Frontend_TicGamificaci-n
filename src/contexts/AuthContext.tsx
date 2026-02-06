@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { User } from '../types/auth';
 import apiService from '../services/api';
 import toast from 'react-hot-toast';
+import { formatDisplayName } from '../lib/formatName';
 
 interface AuthContextType {
   user: User | null;
@@ -66,7 +67,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       if (response.user) {
         setUser(response.user);
-        const userName = response.user.name || response.user.email || 'Usuario';
+        const userName = formatDisplayName(response.user.name || response.user.email || 'Usuario');
         toast.success(`¡Bienvenido, ${userName}!`);
         return true;
       }
@@ -94,7 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       if (response.user) {
         setUser(response.user);
-        const userName = response.user.name || response.user.email || 'Usuario';
+        const userName = formatDisplayName(response.user.name || response.user.email || 'Usuario');
         toast.success(`¡Cuenta creada exitosamente! Bienvenido, ${userName}!`);
         return true;
       }

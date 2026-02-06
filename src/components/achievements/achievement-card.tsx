@@ -47,15 +47,15 @@ const AchievementCard: React.FC<AchievementCardProps> = ({ achievement }) => {
 
   return (
     <div
-      className={`relative rounded-lg border-2 transition-all duration-300 ${
+      className={`relative rounded-xl border-2 transition-all duration-300 overflow-hidden ${
         achievement.isUnlocked
-          ? 'border-yellow-400 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/30 dark:to-orange-900/30 shadow-lg hover:shadow-xl'
-          : 'border-gray-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600 opacity-60 hover:opacity-80'
+          ? 'border-yellow-400 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/30 dark:to-orange-900/30 shadow-md hover:shadow-lg'
+          : 'border-gray-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600 opacity-70 hover:opacity-85'
       }`}
     >
       {/* Badge de desbloqueado */}
       {achievement.isUnlocked && (
-        <div className="absolute -top-3 -right-3 bg-green-500 text-white rounded-full p-2 shadow-lg animate-pulse">
+        <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-2 shadow-lg z-10">
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
           </svg>
@@ -149,21 +149,26 @@ const AchievementCard: React.FC<AchievementCardProps> = ({ achievement }) => {
 
         {/* Puntos */}
         <div
-          className={`flex items-center gap-1 text-sm font-semibold transition-colors ${
+          className={`flex items-center gap-2 text-sm font-semibold transition-colors ${
             achievement.isUnlocked
-              ? 'text-yellow-600 dark:text-yellow-400'
+              ? 'text-amber-600 dark:text-amber-400'
               : 'text-gray-500 dark:text-gray-400'
           }`}
         >
-          <span>✨</span>
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+          </svg>
           <span>{achievement.pointsReward} puntos</span>
         </div>
 
         {/* Fecha de desbloqueo */}
         {achievement.isUnlocked && achievement.unlockedAt && (
-          <p className="text-xs text-green-600 dark:text-green-400 mt-2">
-            Desbloqueado el {new Date(achievement.unlockedAt).toLocaleDateString('es-ES')}
-          </p>
+          <div className="flex items-center space-x-1 text-xs text-green-600 dark:text-green-400 mt-2">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Desbloqueado el {new Date(achievement.unlockedAt).toLocaleDateString('es-ES')}</span>
+          </div>
         )}
       </div>
     </div>

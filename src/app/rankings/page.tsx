@@ -106,15 +106,37 @@ const RankingsPage: React.FC = () => {
   };
 
   const getRankIcon = (position: number) => {
+    const iconClass = "w-6 h-6";
     switch (position) {
       case 1:
-        return '🥇';
+        return (
+          <div className="flex items-center space-x-2">
+            <svg className={`${iconClass} text-yellow-500`} fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+            </svg>
+            <span className="text-lg font-bold text-gray-900">1°</span>
+          </div>
+        );
       case 2:
-        return '🥈';
+        return (
+          <div className="flex items-center space-x-2">
+            <svg className={`${iconClass} text-gray-400`} fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+            </svg>
+            <span className="text-lg font-bold text-gray-900">2°</span>
+          </div>
+        );
       case 3:
-        return '🥉';
+        return (
+          <div className="flex items-center space-x-2">
+            <svg className={`${iconClass} text-amber-600`} fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+            </svg>
+            <span className="text-lg font-bold text-gray-900">3°</span>
+          </div>
+        );
       default:
-        return `#${position}`;
+        return <span className="text-lg font-semibold text-gray-600">#{position}</span>;
     }
   };
 
@@ -154,14 +176,14 @@ const RankingsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50/30 to-gray-50">
       <Navbar />
       
       <div className="max-w-6xl mx-auto py-8 px-4">
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">🏆 Rankings de Desarrolladores</h1>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">Rankings de Desarrolladores</h1>
               <p className="text-gray-600">
                 Compite con otros desarrolladores y mejora tu puntuación analizando más código
               </p>
@@ -169,9 +191,9 @@ const RankingsPage: React.FC = () => {
             <button
               onClick={handleRefresh}
               disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-4 py-2 rounded-md flex items-center space-x-2 transition-colors"
+              className="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg transition-colors font-medium"
             >
-              <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
               <span>{loading ? 'Actualizando...' : 'Actualizar'}</span>
@@ -182,36 +204,36 @@ const RankingsPage: React.FC = () => {
         {/* Global Stats */}
         {globalStats && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white rounded-lg shadow p-6 text-center">
-              <div className="text-3xl font-bold text-blue-600">{globalStats.totalUsers}</div>
-              <div className="text-gray-600">Usuarios Totales</div>
+            <div className="bg-white rounded-xl border border-gray-200/60 shadow-sm p-6 text-center">
+              <div className="text-3xl font-bold text-indigo-600">{globalStats.totalUsers}</div>
+              <div className="text-gray-600 text-sm mt-1">Usuarios Totales</div>
             </div>
-            <div className="bg-white rounded-lg shadow p-6 text-center">
+            <div className="bg-white rounded-xl border border-gray-200/60 shadow-sm p-6 text-center">
               <div className="text-3xl font-bold text-green-600">{globalStats.totalAnalyses}</div>
-              <div className="text-gray-600">Análisis Realizados</div>
+              <div className="text-gray-600 text-sm mt-1">Análisis Realizados</div>
             </div>
-            <div className="bg-white rounded-lg shadow p-6 text-center">
-              <div className="text-3xl font-bold text-yellow-600">{globalStats.totalIssuesFound}</div>
-              <div className="text-gray-600">Vulnerabilidades Encontradas</div>
+            <div className="bg-white rounded-xl border border-gray-200/60 shadow-sm p-6 text-center">
+              <div className="text-3xl font-bold text-amber-600">{globalStats.totalIssuesFound}</div>
+              <div className="text-gray-600 text-sm mt-1">Vulnerabilidades Encontradas</div>
             </div>
-            <div className="bg-white rounded-lg shadow p-6 text-center">
+            <div className="bg-white rounded-xl border border-gray-200/60 shadow-sm p-6 text-center">
               <div className="text-3xl font-bold text-purple-600">{formatScore(globalStats.averageQualityScore)}</div>
-              <div className="text-gray-600">Puntuación Promedio</div>
+              <div className="text-gray-600 text-sm mt-1">Puntuación Promedio</div>
             </div>
           </div>
         )}
 
         {/* My Position (if authenticated) */}
         {myPosition && isAuthenticated && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-            <h2 className="text-lg font-semibold text-blue-900 mb-3">Mi Posición</h2>
+          <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-xl p-6 mb-8">
+            <h2 className="text-lg font-semibold text-indigo-900 mb-3">Mi Posición en el Ranking</h2>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold">
                   {getRankIcon(myPosition.position)}
                 </div>
                 <div>
-                  <div className="font-semibold">{myPosition.userRank?.name}</div>
+                  <div className="font-semibold text-gray-900">{myPosition.userRank?.name}</div>
                   <div className="text-sm text-gray-600">
                     Posición {myPosition.position} de {myPosition.totalUsers}
                   </div>
@@ -230,14 +252,14 @@ const RankingsPage: React.FC = () => {
         )}
 
         {/* Filter Options */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-lg font-semibold mb-4">Filtrar Rankings</h2>
+        <div className="bg-white rounded-xl border border-gray-200/60 shadow-sm p-6 mb-8">
+          <h2 className="text-lg font-semibold mb-4 text-gray-900">Filtrar Rankings</h2>
           <div className="flex flex-wrap gap-4">
             <button
               onClick={() => handleFilterChange('global')}
-              className={`px-4 py-2 rounded-md transition ${
+              className={`px-4 py-2 rounded-lg font-medium transition ${
                 filterType === 'global' 
-                  ? 'bg-blue-600 text-white' 
+                  ? 'bg-indigo-600 text-white shadow-sm' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -246,9 +268,9 @@ const RankingsPage: React.FC = () => {
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => handleFilterChange('university', filterValue)}
-                className={`px-4 py-2 rounded-md transition ${
+                className={`px-4 py-2 rounded-lg font-medium transition ${
                   filterType === 'university' 
-                    ? 'bg-blue-600 text-white' 
+                    ? 'bg-indigo-600 text-white shadow-sm' 
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -268,9 +290,9 @@ const RankingsPage: React.FC = () => {
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => handleFilterChange('career', filterValue)}
-                className={`px-4 py-2 rounded-md transition ${
+                className={`px-4 py-2 rounded-lg font-medium transition ${
                   filterType === 'career' 
-                    ? 'bg-blue-600 text-white' 
+                    ? 'bg-indigo-600 text-white shadow-sm' 
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -291,9 +313,9 @@ const RankingsPage: React.FC = () => {
         </div>
 
         {/* Rankings Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold">
+        <div className="bg-white rounded-xl border border-gray-200/60 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h2 className="text-lg font-semibold text-gray-900">
               {filterType === 'global' 
                 ? 'Ranking Global' 
                 : filterType === 'university' && filterValue 
@@ -334,23 +356,23 @@ const RankingsPage: React.FC = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {rankings.map((user, index) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
+                  <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-2xl font-bold">
+                      <div className="font-bold">
                         {getRankIcon(index + 1)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 bg-blue-600 rounded-full flex items-center justify-center">
-                            <span className="text-white font-medium text-sm">
+                          <div className="h-10 w-10 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-full flex items-center justify-center shadow-sm">
+                            <span className="text-white font-semibold text-sm">
                               {(user.name || user.email || 'U').charAt(0).toUpperCase()}
                             </span>
                           </div>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-semibold text-gray-900">
                             {user.name || user.email || 'Usuario'}
                           </div>
                         </div>

@@ -78,7 +78,7 @@ const CustomMissionsPage: React.FC = () => {
       <div className="max-w-7xl mx-auto py-8 px-4">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">🎯 Desafíos de Código</h1>
+          <h1 className="text-4xl font-bold mb-2 text-gray-900">Desafíos de Código</h1>
           <p className="text-gray-600">
             Completa misiones específicas de cada materia y gana puntos
           </p>

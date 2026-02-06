@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../contexts/AuthContext';
 import UserProfileDropdown from './UserProfileDropdown';
+import { formatDisplayName, getNameInitial } from '../../lib/formatName';
 
 const AuthButton: React.FC = () => {
   const { user, isAuthenticated, loading } = useAuth();
@@ -37,8 +38,9 @@ const AuthButton: React.FC = () => {
   }
 
   if (isAuthenticated && user) {
-    const displayName = user.name || user.email || 'Usuario';
-    const initial = displayName.charAt(0).toUpperCase();
+    const rawName = user.name || user.email || 'Usuario';
+    const displayName = formatDisplayName(rawName);
+    const initial = getNameInitial(rawName);
     
     return (
       <div className="relative" ref={dropdownRef}>
@@ -46,8 +48,8 @@ const AuthButton: React.FC = () => {
           onClick={handleProfileClick}
           className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 transition-colors"
         >
-          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-            <span className="text-white font-medium text-sm">
+          <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-full flex items-center justify-center shadow-sm">
+            <span className="text-white font-semibold text-sm">
               {initial}
             </span>
           </div>

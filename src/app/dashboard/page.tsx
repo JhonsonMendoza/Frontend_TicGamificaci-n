@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { achievementsApi } from '@/apis/achievements.api';
 import type { Achievement, AchievementStats } from '@/apis/achievements.api';
+import { formatDisplayName } from '@/lib/formatName';
 
 interface MetricCard {
   title: string;
@@ -17,6 +18,38 @@ interface MetricCard {
   color: string;
   trend?: number;
 }
+
+const getMetricIcon = (icon: string) => {
+  const iconClass = "w-8 h-8";
+  switch (icon) {
+    case 'chart':
+      return (
+        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      );
+    case 'bug':
+      return (
+        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      );
+    case 'target':
+      return (
+        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+        </svg>
+      );
+    case 'star':
+      return (
+        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+};
 
 interface AnalysisStats {
   totalAnalyses: number;
@@ -170,48 +203,49 @@ export default function Dashboard() {
     {
       title: "Análisis Completados",
       value: stats?.completedAnalyses || 0,
-      icon: "📊",
-      color: "bg-blue-500",
+      icon: "chart",
+      color: "bg-indigo-600",
     },
     {
       title: "Issues Encontrados",
       value: stats?.totalIssues || 0,
-      icon: "🐛",
-      color: "bg-red-500",
+      icon: "bug",
+      color: "bg-red-600",
     },
     {
       title: "Puntuación Promedio",
       value: `${formatScore(stats?.averageScore, 1)}/10`,
-      icon: "🎯",
-      color: "bg-green-500",
+      icon: "target",
+      color: "bg-green-600",
     },
     {
       title: "Puntos Totales",
       value: achievementStats?.totalPoints || 0,
-      icon: "⭐",
-      color: "bg-yellow-500"
+      icon: "star",
+      color: "bg-amber-500"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50/30 to-gray-50">
       <Navbar />
       
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-gray-200/60">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
                 Dashboard
               </h1>
-              <p className="text-gray-600 mt-2">
-                Bienvenido de vuelta, {user?.name || user?.email}
+              <p className="text-gray-600">
+                Bienvenido de vuelta, <span className="font-semibold text-indigo-600">{formatDisplayName(user?.name || user?.email || '')}</span>
               </p>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
-                🟢 Sistema Activo
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2 bg-green-50 border border-green-200 text-green-700 px-4 py-2 rounded-full text-sm font-medium">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span>Sistema Activo</span>
               </div>
             </div>
           </div>
@@ -224,21 +258,23 @@ export default function Dashboard() {
           {metrics.map((metric, index) => (
             <div
               key={index}
-              className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-6"
+              className="bg-white rounded-xl border border-gray-200/60 hover:border-indigo-200 hover:shadow-lg transition-all duration-300 p-6"
             >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-600 text-sm font-medium">{metric.title}</p>
                   <p className="text-3xl font-bold text-gray-900 mt-2">{metric.value}</p>
                   {metric.trend && (
-                    <p className="text-green-600 text-sm flex items-center mt-2">
-                      <span className="mr-1">↗️</span>
-                      +{metric.trend}% vs. mes anterior
-                    </p>
+                    <div className="flex items-center text-green-600 text-sm mt-2">
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                      <span>+{metric.trend}% vs. mes anterior</span>
+                    </div>
                   )}
                 </div>
-                <div className={`${metric.color} text-white p-3 rounded-full text-2xl`}>
-                  {metric.icon}
+                <div className={`${metric.color} text-white p-3 rounded-xl shadow-sm`}>
+                  {getMetricIcon(metric.icon)}
                 </div>
               </div>
             </div>
@@ -249,14 +285,17 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Recent Analyses */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="bg-white rounded-xl border border-gray-200/60 shadow-sm p-8">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">Análisis Recientes</h2>
                 <Link 
                   href="/my-analyses"
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+                  className="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium"
                 >
-                  Ver Todos
+                  <span>Ver Todos</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </Link>
               </div>
 
@@ -313,7 +352,11 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <div className="text-6xl mb-4">📈</div>
+                  <div className="flex justify-center mb-4">
+                    <svg className="w-20 h-20 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
                   <h3 className="text-xl font-semibold text-gray-700 mb-2">
                     No hay análisis disponibles
                   </h3>
@@ -322,9 +365,12 @@ export default function Dashboard() {
                   </p>
                   <Link 
                     href="/upload"
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                    className="inline-flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                   >
-                    Iniciar Análisis
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <span>Iniciar Análisis</span>
                   </Link>
                 </div>
               )}
@@ -334,14 +380,17 @@ export default function Dashboard() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Recent Achievements */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="bg-white rounded-xl border border-gray-200/60 shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-gray-900">Logros Recientes</h3>
                 <Link 
                   href="/achievements"
-                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center space-x-1"
                 >
-                  Ver todos →
+                  <span>Ver todos</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </Link>
               </div>
               {recentAchievements.length > 0 ? (
@@ -409,28 +458,34 @@ export default function Dashboard() {
             )}
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="bg-white rounded-xl border border-gray-200/60 shadow-sm p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Acciones Rápidas</h3>
               <div className="space-y-3">
                 <Link 
                   href="/upload"
-                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all flex items-center justify-center space-x-2"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-lg transition-all flex items-center justify-center space-x-2 font-medium"
                 >
-                  <span>📤</span>
-                  <span>Subir Archivo</span>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  <span>Subir Proyecto</span>
                 </Link>
                 <Link 
                   href="/my-analyses"
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white p-3 rounded-lg hover:from-green-600 hover:to-green-700 transition-all flex items-center justify-center space-x-2"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white p-3 rounded-lg transition-all flex items-center justify-center space-x-2 font-medium"
                 >
-                  <span>📊</span>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
                   <span>Mis Análisis</span>
                 </Link>
                 <Link 
                   href="/rankings"
-                  className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white p-3 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all flex items-center justify-center space-x-2"
+                  className="w-full bg-amber-500 hover:bg-amber-600 text-white p-3 rounded-lg transition-all flex items-center justify-center space-x-2 font-medium"
                 >
-                  <span>🏆</span>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                  </svg>
                   <span>Ver Rankings</span>
                 </Link>
               </div>

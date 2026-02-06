@@ -35,18 +35,35 @@ export default function UploadPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const getFileIcon = (fileName: string): string => {
+  const getFileIcon = (fileName: string) => {
     const extension = fileName.split('.').pop()?.toLowerCase();
+    const iconClass = "w-12 h-12";
+    
     switch (extension) {
-      case 'zip': return '🗜️';
-      case 'js': case 'jsx': return '📄';
-      case 'ts': case 'tsx': return '📘';
-      case 'py': return '🐍';
-      case 'java': return '☕';
-      case 'cpp': case 'c': return '⚙️';
-      case 'html': return '🌐';
-      case 'css': return '🎨';
-      default: return '📁';
+      case 'zip': 
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+          </svg>
+        );
+      case 'js': case 'jsx': case 'ts': case 'tsx': 
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+        );
+      case 'py': case 'java': case 'cpp': case 'c': 
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        );
+      default: 
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+        );
     }
   };
 
@@ -136,27 +153,34 @@ export default function UploadPage() {
         <div className="max-w-4xl mx-auto px-6 py-12">
           {/* Header */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-6">
-              <span className="text-3xl text-white">📤</span>
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-2xl mb-6 shadow-lg">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-              Análisis de Proyecto
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              Análisis de <span className="text-indigo-600">Proyecto</span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Sube tu proyecto para obtener un análisis detallado de código, métricas de calidad y sugerencias de mejora
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              Sube tu proyecto para obtener un análisis detallado de código, métricas de calidad y sugerencias de mejora profesionales
             </p>
             {!isAuthenticated && (
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-blue-800 text-center">
-                  💡 <strong>Tip:</strong> 
-                  <Link href="/auth/register" className="text-blue-600 hover:text-blue-800 font-medium mx-1">
-                    Regístrate
-                  </Link>
-                  para guardar tus análisis y participar en los 
-                  <Link href="/rankings" className="text-blue-600 hover:text-blue-800 font-medium mx-1">
-                    rankings
-                  </Link>
-                </p>
+              <div className="mt-6 p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
+                <div className="flex items-center justify-center space-x-2 text-indigo-800">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="text-sm">
+                    <strong>Tip Profesional:</strong> 
+                    <Link href="/auth/register" className="text-indigo-700 hover:text-indigo-900 font-semibold mx-1 underline">
+                      Regístrate
+                    </Link>
+                    para guardar tus análisis y participar en los 
+                    <Link href="/rankings" className="text-indigo-700 hover:text-indigo-900 font-semibold mx-1 underline">
+                      rankings
+                    </Link>
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -168,18 +192,37 @@ export default function UploadPage() {
               {/* Tarjeta: Subir Archivo */}
               <div
                 onClick={() => setUploadMode("file")}
-                className="rounded-2xl shadow-lg overflow-hidden transition-all transform duration-300 cursor-pointer hover:shadow-xl hover:scale-102"
+                className="group rounded-2xl border-2 border-gray-200 overflow-hidden transition-all duration-300 cursor-pointer hover:shadow-xl hover:border-indigo-300 bg-white"
               >
-                <div className="bg-gradient-to-br from-blue-500 to-blue-600 px-8 py-12 text-white text-center">
-                  <div className="text-5xl mb-4">📦</div>
-                  <h3 className="text-2xl font-bold mb-3">Subir Archivo</h3>
-                  <p className="text-blue-100">Comprime tu proyecto en ZIP y súbelo directamente</p>
+                <div className="bg-gradient-to-br from-indigo-600 to-indigo-700 px-8 py-10 text-white">
+                  <div className="flex justify-center mb-4">
+                    <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold mb-2 text-center">Subir Archivo</h3>
+                  <p className="text-indigo-100 text-center text-sm">Comprime tu proyecto en ZIP y súbelo directamente</p>
                 </div>
-                <div className="bg-white px-8 py-6">
-                  <ul className="text-gray-700 text-sm space-y-2">
-                    <li>✓ Archivos ZIP soportados</li>
-                    <li>✓ Tamaño máximo configurable</li>
-                    <li>✓ Análisis inmediato</li>
+                <div className="px-8 py-6">
+                  <ul className="text-gray-600 text-sm space-y-2">
+                    <li className="flex items-center space-x-2">
+                      <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Archivos ZIP soportados</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Tamaño máximo configurable</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Análisis inmediato</span>
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -187,17 +230,31 @@ export default function UploadPage() {
               {/* Tarjeta: Clonar Repositorio */}
               <div
                 onClick={() => isAuthenticated ? setUploadMode("repo") : window.location.href = "/auth/login"}
-                className="rounded-2xl shadow-lg overflow-hidden transition-all transform duration-300 cursor-pointer hover:shadow-xl hover:scale-102"
+                className="group rounded-2xl border-2 border-gray-200 overflow-hidden transition-all duration-300 cursor-pointer hover:shadow-xl hover:border-purple-300 bg-white"
               >
-                <div className="bg-gradient-to-br from-purple-500 to-purple-600 px-8 py-12 text-white text-center">
-                  <div className="text-5xl mb-4">🔗</div>
-                  <h3 className="text-2xl font-bold mb-3">Clonar Repositorio</h3>
-                  <p className="text-purple-100">Analiza un repositorio público de Git directamente</p>
+                <div className="bg-gradient-to-br from-purple-600 to-purple-700 px-8 py-10 text-white">
+                  <div className="flex justify-center mb-4">
+                    <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold mb-2 text-center">Clonar Repositorio</h3>
+                  <p className="text-purple-100 text-center text-sm">Analiza un repositorio público de Git directamente</p>
                 </div>
-                <div className="bg-white px-8 py-6">
-                  <ul className="text-gray-700 text-sm space-y-2">
-                    <li>✓ GitHub, GitLab, Bitbucket</li>
-                    <li>✓ Repositorios públicos</li>
+                <div className="px-8 py-6">
+                  <ul className="text-gray-600 text-sm space-y-2">
+                    <li className="flex items-center space-x-2">
+                      <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>GitHub, GitLab, Bitbucket</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Repositorios públicos</span>
+                    </li>
                     <li>✓ Clone automático</li>
                   </ul>
                 </div>
@@ -240,7 +297,7 @@ export default function UploadPage() {
             >
               {file ? (
                 <div className="space-y-4">
-                  <div className="text-6xl">{getFileIcon(file.name)}</div>
+                  <div className="flex justify-center text-indigo-600">{getFileIcon(file.name)}</div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">{file.name}</h3>
                     <p className="text-gray-600">{formatFileSize(file.size)}</p>
@@ -256,8 +313,16 @@ export default function UploadPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="text-6xl text-gray-400">
-                    {isDragOver ? '📥' : '📁'}
+                  <div className="text-gray-400">
+                    {isDragOver ? (
+                      <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                      </svg>
+                    ) : (
+                      <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                      </svg>
+                    )}
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-gray-700 mb-2">
@@ -392,7 +457,9 @@ export default function UploadPage() {
                   </div>
                 ) : (
                   <div className="flex items-center space-x-2">
-                    <span>🚀</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
                     <span>Iniciar Análisis</span>
                   </div>
                 )}
@@ -419,18 +486,30 @@ export default function UploadPage() {
 
         {/* Features */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-          <div className="bg-white rounded-xl p-6 text-center shadow-lg">
-            <div className="text-3xl mb-4">⚡</div>
+          <div className="bg-white rounded-xl p-6 text-center border border-gray-200 hover:border-indigo-200 hover:shadow-md transition-all">
+            <div className="flex justify-center mb-4">
+              <svg className="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
             <h3 className="font-semibold text-gray-900 mb-2">Análisis Rápido</h3>
             <p className="text-gray-600 text-sm">Procesamiento en segundos con resultados detallados</p>
           </div>
-          <div className="bg-white rounded-xl p-6 text-center shadow-lg">
-            <div className="text-3xl mb-4">🔍</div>
+          <div className="bg-white rounded-xl p-6 text-center border border-gray-200 hover:border-indigo-200 hover:shadow-md transition-all">
+            <div className="flex justify-center mb-4">
+              <svg className="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
             <h3 className="font-semibold text-gray-900 mb-2">Análisis Profundo</h3>
             <p className="text-gray-600 text-sm">Evaluación completa de calidad y mejores prácticas</p>
           </div>
-          <div className="bg-white rounded-xl p-6 text-center shadow-lg">
-            <div className="text-3xl mb-4">📊</div>
+          <div className="bg-white rounded-xl p-6 text-center border border-gray-200 hover:border-indigo-200 hover:shadow-md transition-all">
+            <div className="flex justify-center mb-4">
+              <svg className="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
             <h3 className="font-semibold text-gray-900 mb-2">Reportes Visuales</h3>
             <p className="text-gray-600 text-sm">Métricas claras y sugerencias de mejora</p>
           </div>
